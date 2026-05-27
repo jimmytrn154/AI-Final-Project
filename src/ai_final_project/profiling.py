@@ -41,6 +41,8 @@ def measure_latency(
 def estimate_flops(model: torch.nn.Module, sample: torch.Tensor) -> float | None:
     if profile is None:
         return None
+    device = next(model.parameters()).device
+    sample = sample.to(device)
     flops, _ = profile(model, inputs=(sample,), verbose=False)
     return float(flops)
 
