@@ -29,7 +29,7 @@ The main research question is:
 
 > **Can a CNN learn when to stop computation in order to reduce FLOPs, latency, and carbon emissions while maintaining acceptable classification accuracy?**
 
-To answer this, the project compares three exit-decision strategies:
+To answer this, the project compares three main exit-decision strategies:
 
 1. **Fixed confidence thresholding**  
    Exit when the current classifier's confidence is above a fixed threshold.
@@ -39,6 +39,8 @@ To answer this, the project compares three exit-decision strategies:
 
 3. **Learned exit controller**  
    Train a small controller to decide whether to exit or continue using confidence, entropy, margin, exit index, and FLOPs-used features.
+
+An additional optional phase will explore **policy-gradient / REINFORCE training** for the learned controller after the main project pipeline is complete.
 
 ---
 
@@ -189,7 +191,7 @@ The reward idea is:
 R = \mathbb{1}[\hat{y}=y] - \lambda \cdot \frac{\text{FLOPs}_i}{\text{FLOPs}_{full}}
 ```
 
-This rewards correct predictions while penalizing expensive computation. In practice, the first implementation may train the controller using the **earliest correct exit** as a supervised target, then compare it with the reward-based version if time allows.
+This rewards correct predictions while penalizing expensive computation. In practice, the first implementation may train the controller using the **earliest correct exit** or **best reward exit** as a supervised target, then compare it with the reward-based version if time allows.
 
 ---
 
@@ -228,6 +230,7 @@ FLOPs reduction is computed as:
 | Fixed threshold | TBD | TBD | TBD | TBD | TBD |
 | Dynamic threshold | TBD | TBD | TBD | TBD | TBD |
 | Learned exit controller | TBD | TBD | TBD | TBD | TBD |
+| REINFORCE exit controller | Optional | Optional | Optional | Optional | Optional |
 
 ### 7.3 Planned Visualizations
 
@@ -239,96 +242,171 @@ FLOPs reduction is computed as:
 
 ---
 
-## 8. Implementation Plan
+## 8. Implementation Roadmap
 
-The project will be built in stages. The first priority is to make the baseline work before implementing advanced exit strategies.
+### Phase 1: Baseline Setup
 
-### Phase 1: Baseline ResNet-18
+Train a standard ResNet-18 on CIFAR-10 and build the evaluation pipeline.
 
-- Train a standard ResNet-18 on CIFAR-10.
-- Build evaluation scripts for accuracy, FLOPs, latency, and CodeCarbon.
-- Save baseline checkpoints and result tables.
+Deliverables:
 
-### Phase 2: Early-Exit ResNet-18
+- Working CIFAR-10 data loader
+- Full ResNet-18 training script
+- Baseline test accuracy
+- Baseline FLOPs, latency, and CodeCarbon measurement
 
-- Add auxiliary classifiers after ResNet Layer 1, Layer 2, and Layer 3.
-- Train all exits jointly with weighted cross-entropy.
-- Verify that each exit produces valid predictions.
+### Phase 2: Early-Exit Architecture
+
+Modify ResNet-18 by adding auxiliary classifiers after intermediate ResNet stages.
+
+Deliverables:
+
+- Early-exit ResNet-18 model
+- Joint weighted-loss training
+- Per-exit accuracy report
 
 ### Phase 3: Fixed Threshold Experiments
 
-- Sweep fixed thresholds: `0.60`, `0.70`, `0.80`, `0.90`, `0.95`.
-- Record accuracy, FLOPs, latency, carbon emissions, and exit distribution.
-- Generate the first accuracy-efficiency curve.
+Run threshold sweeps using maximum softmax confidence.
+
+Deliverables:
+
+- Accuracy vs FLOPs curve
+- Exit distribution for each threshold
+- Best fixed-threshold configuration
 
 ### Phase 4: Budget-Aware Dynamic Thresholding
 
-- Implement accuracy-first and budget-first dynamic threshold rules.
-- Compare against the best fixed-threshold baseline.
-- Analyze whether dynamic thresholds improve the trade-off curve.
+Test dynamic threshold rules that adjust based on used FLOPs.
+
+Deliverables:
+
+- Accuracy-first dynamic threshold results
+- Budget-first dynamic threshold results
+- Comparison with fixed thresholding
 
 ### Phase 5: Learned Exit Controller
 
-- Extract controller features: confidence, entropy, margin, exit index, and FLOPs used.
-- Train a small MLP controller.
-- Compare supervised earliest-correct-exit training vs reward-based training if time allows.
+Train a small controller using exit features and supervised reward-based labels.
 
-### Phase 6: Report and Final Submission
+Deliverables:
 
-- Write the report in research-paper format.
-- Include numbered figures and tables.
-- Prepare `code.zip` and `statement.pdf` for submission.
+- Controller dataset from exit features
+- Learned controller training script
+- Comparison against fixed and dynamic thresholding
+
+### Phase 6: Reporting and Finalization
+
+Prepare the final report, visualizations, code package, and code-origin statement.
+
+Deliverables:
+
+- Final result tables
+- Final plots
+- LaTeX report
+- `code.zip`
+- `statement.pdf`
 
 ---
 
-## 9. Suggested Repository Structure
+## 9. Optional Extra Phase: Policy-Gradient / REINFORCE Training
 
-```text
-green-ai-early-exit/
-├── configs/
-│   ├── baseline_resnet18.yaml
-│   └── early_exit_resnet18.yaml
-├── models/
-│   ├── resnet_cifar.py
-│   ├── early_exit_resnet.py
-│   └── exit_controller.py
-├── utils/
-│   ├── metrics.py
-│   ├── flops.py
-│   ├── latency.py
-│   └── carbon.py
-├── train_baseline.py
-├── train_early_exit.py
-├── train_controller.py
-├── evaluate.py
-├── measure_efficiency.py
-├── results/
-│   ├── tables/
-│   └── figures/
-├── report/
-│   └── main.tex
-└── README.md
+This phase is an **extra research extension** and should only be attempted after the main project pipeline is complete:
+
+1. Full ResNet-18 baseline is trained and evaluated.
+2. Early-exit ResNet-18 is trained successfully.
+3. Fixed confidence thresholding experiments are completed.
+4. Budget-aware dynamic thresholding experiments are completed.
+5. The learned exit controller works using supervised or reward-labeled training.
+
+The purpose of this extra phase is to make the learned exit controller more explicitly reinforcement-learning based.
+
+### 9.1 Motivation
+
+The learned exit controller can be viewed as a policy that decides whether to stop inference or continue deeper into the network. In the main implementation, the controller may be trained using supervised labels such as the **earliest correct exit** or the **best reward exit**. In this optional phase, the controller will instead be trained with a policy-gradient method.
+
+At each exit `i`, the controller observes the state:
+
+```math
+s_i = [c_i, H_i, m_i, i, r_i]
 ```
+
+Then it samples an action from its policy:
+
+```math
+a_i \sim \pi_\theta(a_i \mid s_i)
+```
+
+where:
+
+- `a_i = exit`: stop inference and return the current prediction
+- `a_i = continue`: continue to the next ResNet stage
+
+This makes each image a short decision-making episode.
+
+### 9.2 Reward Function
+
+When the controller eventually exits, it receives the accuracy-compute reward:
+
+```math
+R = \mathbb{1}[\hat{y}=y] - \lambda \cdot \frac{\text{FLOPs}_i}{\text{FLOPs}_{full}}
+```
+
+This reward encourages the controller to find exits that are both correct and computationally cheap.
+
+- Correct early exit → high reward
+- Correct late exit → moderate reward
+- Wrong early exit → low or negative reward
+- Wrong late exit → worst reward
+
+The hyperparameter `λ` controls how strongly computation is penalized.
+
+### 9.3 Policy-Gradient Update
+
+The controller can be trained using the REINFORCE update:
+
+```math
+\nabla J(\theta) = \mathbb{E}\left[R \nabla \log \pi_\theta(a_i \mid s_i)\right]
+```
+
+In implementation, this means:
+
+1. Run an image through the early-exit ResNet.
+2. At each exit, let the controller sample `exit` or `continue`.
+3. When the controller exits, compute the final reward `R`.
+4. Update the controller to increase the probability of actions that produced high reward.
+
+A baseline value may be subtracted from the reward to reduce variance:
+
+```math
+\nabla J(\theta) = \mathbb{E}\left[(R - b) \nabla \log \pi_\theta(a_i \mid s_i)\right]
+```
+
+where `b` can be the moving average reward.
+
+### 9.4 Why This Is Extra, Not Core
+
+This phase is intentionally optional because policy-gradient training can be noisy and harder to debug than supervised controller training. The main project should first prove the early-exit system works through deterministic and easier-to-evaluate methods.
+
+The REINFORCE phase will be considered successful if it can outperform or match the supervised learned controller under at least one compute-accuracy trade-off setting.
+
+### 9.5 Extra Phase Evaluation
+
+If implemented, this phase will add one more row to the final comparison table:
+
+| Method | Accuracy | FLOPs Reduction | Latency Reduction | CO₂ Reduction | Avg Exit |
+| :--- | ---: | ---: | ---: | ---: | ---: |
+| REINFORCE exit controller | TBD | TBD | TBD | TBD | TBD |
+
+The REINFORCE controller should be compared against:
+
+- Fixed confidence thresholding
+- Budget-aware dynamic thresholding
+- Supervised learned exit controller
+- Full ResNet-18 baseline
 
 ---
 
 ## 10. Immediate Next Step
 
-The immediate next step is:
-
-> **Train and evaluate the full ResNet-18 baseline on CIFAR-10.**
-
-Before implementing early exits, the baseline pipeline must produce:
-
-- test accuracy,
-- FLOPs/sample,
-- inference latency,
-- CodeCarbon emissions.
-
-This baseline becomes the reference point for proving whether early exiting actually saves computation and energy.
-
----
-
-## 11. Summary
-
-This project reframes Green AI as a decision-making problem: instead of always using the full CNN, the model should learn when computation is no longer necessary. By comparing fixed confidence thresholding, budget-aware dynamic thresholding, and a learned exit controller, the project aims to show how early-exit inference can reduce FLOPs, latency, and carbon emissions while preserving most of the accuracy of a full ResNet-18 model.
+The first concrete task is to train and evaluate the full ResNet-18 baseline on CIFAR-10. Do not start with the learned controller or REINFORCE phase before the baseline and fixed-threshold early-exit system work correctly.
