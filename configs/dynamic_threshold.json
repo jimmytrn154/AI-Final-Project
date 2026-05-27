@@ -1,0 +1,19 @@
+{
+  "seed": 42,
+  "device": "auto",
+  "num_workers": 2,
+  "data": {
+    "root": "data",
+    "batch_size": 128,
+    "val_split": 0.1
+  },
+  "checkpoint_path": "checkpoints/early_exit_best.pt",
+  "base_threshold": 0.85,
+  "alpha_values": [0.1, 0.2, 0.3],
+  "modes": ["accuracy_first", "budget_first"],
+  "outputs": {
+    "checkpoint_dir": "checkpoints",
+    "metrics_dir": "outputs/metrics",
+    "plots_dir": "outputs/plots"
+  }
+}

@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.DS_Store
+.venv/
+data/cifar-10-batches-py/
+data/cifar-10-python.tar.gz
+checkpoints/*.pt
+outputs/metrics/*.json
+outputs/metrics/*.csv
+outputs/plots/*.png

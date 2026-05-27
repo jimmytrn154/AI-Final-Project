@@ -1,0 +1,24 @@
+{
+  "seed": 42,
+  "device": "auto",
+  "num_workers": 2,
+  "data": {
+    "root": "data",
+    "batch_size": 128,
+    "val_split": 0.1
+  },
+  "checkpoint_path": "checkpoints/early_exit_best.pt",
+  "controller_checkpoint_path": "checkpoints/controller_best.pt",
+  "supervision_strategy": "earliest_correct",
+  "reward_lambda": 0.1,
+  "training": {
+    "epochs": 15,
+    "learning_rate": 0.001,
+    "weight_decay": 0.00001
+  },
+  "outputs": {
+    "checkpoint_dir": "checkpoints",
+    "metrics_dir": "outputs/metrics",
+    "plots_dir": "outputs/plots"
+  }
+}
