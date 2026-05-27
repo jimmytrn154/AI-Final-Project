@@ -2,18 +2,18 @@
 
 **Project:** Learning When to Stop: Budget-Aware Early Exiting for Energy-Efficient CNN Inference  
 **Target Deadline:** July 12, 2026  
-**Last Updated:** May 27, 2026
+**Last Updated:** May 28, 2026
 
 ## Overall Status Summary
-- Current stage: project scaffold and experiment pipeline implemented.
-- Training and experiment execution are not complete yet.
-- Result tables are ready to receive outputs from baseline, early-exit, threshold, dynamic, and controller runs.
+- Current stage: full ResNet-18 baseline completed; early-exit training is next.
+- Baseline checkpoint and metrics have been saved successfully.
+- Result tables now contain the baseline reference row for future early-exit comparisons.
 
 ## Milestone Checklist
 - [x] Environment and repo structure ready
-- [ ] CIFAR-10 loader works
-- [ ] Full ResNet-18 baseline trained
-- [ ] Baseline metrics recorded
+- [x] CIFAR-10 loader works
+- [x] Full ResNet-18 baseline trained
+- [x] Baseline metrics recorded
 - [x] Early-exit ResNet-18 implemented
 - [ ] Joint-loss training verified
 - [ ] Per-exit metrics recorded
@@ -25,19 +25,19 @@
 - [ ] Optional REINFORCE experiment completed
 
 ## Current Focus
-- Verify the local environment has the required Python packages.
-- Run the baseline training pipeline and save `baseline_metrics.json`.
-- Train the early-exit model so the policy experiments can begin.
+- Train the early-exit model and verify joint-loss training.
+- Record per-exit validation/test metrics.
+- Use the baseline metrics as the reference for FLOPs, latency, and emissions reductions.
 
 ## Completed Tasks Log
 - 2026-05-27: Reviewed `README.md` and aligned implementation order with the project phases.
 - 2026-05-27: Created the project scaffold under `src/`, `scripts/`, `configs/`, `tests/`, `outputs/`, `checkpoints/`, and `data/`.
 - 2026-05-27: Added baseline, early-exit, threshold, dynamic-threshold, controller, and plotting entrypoint scripts.
 - 2026-05-27: Added this progress tracker as the working status document.
+- 2026-05-28: Successfully trained the full ResNet-18 baseline for 20 epochs and saved `checkpoints/baseline_best.pt`.
+- 2026-05-28: Recorded baseline metrics in `outputs/metrics/baseline_metrics.json` and `outputs/metrics/comparison.csv`.
 
 ## Pending Tasks
-- Install or confirm dependencies from `requirements.txt`.
-- Run `scripts/train_baseline.py`.
 - Run `scripts/train_early_exit.py`.
 - Run `scripts/run_threshold_sweep.py`.
 - Run `scripts/run_dynamic_threshold.py`.
@@ -48,15 +48,14 @@
 ## Key Experiment Results
 | Method | Accuracy | FLOPs/sample | FLOPs Reduction | Latency/sample | CO2 Emissions | Avg Exit | Notes |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
-| Full ResNet-18 | TBD | TBD | 0% | TBD | TBD | Final | Awaiting baseline run |
+| Full ResNet-18 | 88.26% | 557.89M | 0% | 2.18 ms | 9.23e-05 kg | Final | Baseline completed; best val accuracy 88.44% |
 | Early-Exit ResNet-18 | TBD | TBD | TBD | TBD | TBD | N/A | Awaiting training |
 | Fixed threshold | TBD | TBD | TBD | TBD | TBD | TBD | Awaiting sweep |
 | Dynamic threshold | TBD | TBD | TBD | TBD | TBD | TBD | Awaiting sweep |
 | Learned exit controller | TBD | TBD | TBD | TBD | TBD | TBD | Awaiting controller run |
 
 ## Blockers and Risks
-- `torch`, `torchvision`, `thop`, `codecarbon`, or `matplotlib` may not be installed yet.
-- CIFAR-10 download requires network access when the dataset is not already cached.
+- Early-exit training still needs to be run and checked for stable per-exit performance.
 - Dynamic and controller latency/emissions are currently estimated or left pending until direct benchmarking is added.
 
 ## Decisions and Assumptions
@@ -66,6 +65,6 @@
 - FLOPs ratios for exits are initialized from architecture-level estimates and can be refined with profiling later.
 
 ## Next 3 Actions
-1. Confirm dependencies and run the baseline training script.
-2. Train the early-exit model and verify per-exit metrics.
-3. Execute fixed and dynamic threshold experiments, then update the tracker with real numbers.
+1. Run `scripts/train_early_exit.py` and save `early_exit_metrics.json`.
+2. Verify per-exit accuracy and final-exit accuracy against the full ResNet-18 baseline.
+3. Execute fixed-threshold and dynamic-threshold experiments, then update the tracker with real numbers.
