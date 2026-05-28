@@ -1,0 +1,1 @@
+CUDA_VISIBLE_DEVICES=1 python3 scripts/train_early_exit.py --config configs/early_exit.json
