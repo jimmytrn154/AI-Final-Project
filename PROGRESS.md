@@ -5,7 +5,7 @@
 **Last Updated:** June 14, 2026
 
 ## Overall Status Summary
-- Current stage: learned controller training completed; final plots, tables, and report packaging are next.
+- Current stage: report assets generated; report packaging and final write-up are next.
 - Baseline, early-exit, threshold, and controller metrics are now available for direct comparison.
 - The learned controller achieved the largest FLOPs reduction so far at 72.75%, but the best overall accuracy-efficiency tradeoff remains the fixed-threshold policy at `tau = 0.95`.
 
@@ -20,13 +20,13 @@
 - [x] Fixed-threshold sweep completed
 - [x] Dynamic-threshold experiments completed
 - [x] Learned controller trained and evaluated
-- [ ] Final plots and tables generated
+- [x] Final plots and tables generated
 - [ ] Report/package finalized
 - [ ] Optional REINFORCE experiment completed
 
 ## Current Focus
-- Generate final plots and tables from baseline, early-exit, threshold, and controller results.
 - Consolidate the best policy tradeoffs for the final report discussion.
+- Finalize the report/package using the generated plots and updated metrics table.
 - Decide whether the optional REINFORCE experiment is still worth pursuing given the current controller result.
 
 ## Completed Tasks Log
@@ -42,9 +42,10 @@
 - 2026-06-13: Completed the dynamic-threshold sweep and saved `outputs/metrics/dynamic_threshold_results.json`.
 - 2026-06-14: Trained the learned controller and saved `checkpoints/controller_best.pt`.
 - 2026-06-14: Recorded controller metrics in `outputs/metrics/controller_results.json` and `outputs/metrics/comparison.csv`.
+- 2026-06-14: Backfilled estimated controller FLOPs, latency, and CO2 metrics from the baseline reference.
+- 2026-06-14: Generated report plots in `outputs/plots/` using `scripts/make_report_assets.py`.
 
 ## Pending Tasks
-- Run `scripts/make_report_assets.py`.
 - Update milestone checkboxes after each completed phase.
 
 ## Key Experiment Results
@@ -54,13 +55,13 @@
 | Early-Exit ResNet-18 | 87.74% | 558.01M | 0% | 2.61 ms | 1.49e-04 kg | N/A | Joint-loss training completed; per-exit test accuracies 65.53%, 84.65%, 88.05%, 87.74%; best val final accuracy 88.20% |
 | Fixed threshold | 87.53% | 319.51M | 42.73% | 1.25 ms | 5.29e-05 kg | 2.51 | Best fixed result at `tau = 0.95`; exit distribution 10.94%, 50.99%, 14.44%, 23.63% |
 | Dynamic threshold | 87.41% | 359.92M | 35.48% | 1.41 ms | 5.96e-05 kg | 2.72 | Best dynamic result from `accuracy_first` with `alpha = 0.30` |
-| Learned exit controller | 73.64% | TBD | 72.75% | TBD | TBD | 1.24 | `earliest_correct` controller exits at Exit 1 for 80.39% of samples; strong efficiency gain but large accuracy drop |
+| Learned exit controller | 73.64% | 152.01M | 72.75% | 0.59 ms | 2.52e-05 kg | 1.24 | `earliest_correct` controller exits at Exit 1 for 80.39% of samples; efficiency metrics are baseline-scaled estimates |
 
 ## Blockers and Risks
 - None of the current threshold policies surpass the baseline accuracy of 88.26%; the best fixed-threshold policy reaches 87.53%.
 - The dynamic-threshold grid underperforms the best fixed-threshold result on both accuracy and estimated FLOPs reduction.
 - The learned controller is too aggressive in its current form, exiting at Exit 1 for 80.39% of samples and dropping accuracy to 73.64%.
-- Dynamic and controller latency/emissions are currently estimated or left pending until direct benchmarking is added.
+- Threshold and controller latency/emissions are baseline-scaled estimates rather than direct measurements.
 
 ## Decisions and Assumptions
 - `PROGRESS.md` is the primary working tracker; `extraPlan.md` remains a strategy reference.
@@ -69,6 +70,6 @@
 - FLOPs ratios for exits are initialized from architecture-level estimates and can be refined with profiling later.
 
 ## Next 3 Actions
-1. Run `scripts/make_report_assets.py`.
-2. Update the report discussion and tracker with the controller results and the current best fixed-threshold tradeoff.
+1. Update the report discussion with the controller results and the current best fixed-threshold tradeoff.
+2. Finalize the report/package using the generated plots and completed metrics table.
 3. Decide whether the optional REINFORCE experiment is still worth pursuing or whether the report should conclude with the supervised controller result.

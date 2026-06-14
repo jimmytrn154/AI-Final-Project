@@ -14,7 +14,7 @@ from ai_final_project.config import CONTROLLER_DEFAULTS, load_json, merge_defaul
 from ai_final_project.controller import ExitController, build_controller_dataset, evaluate_controller
 from ai_final_project.data import create_cifar10_dataloaders
 from ai_final_project.models import EarlyExitResNet18
-from ai_final_project.results import append_comparison_row, write_metrics_json
+from ai_final_project.results import upsert_comparison_row, write_metrics_json
 from ai_final_project.training import train_controller
 from ai_final_project.utils import resolve_device, set_seed
 
@@ -23,6 +23,13 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Train the learned exit controller.")
     parser.add_argument("--config", default="configs/controller.json")
     return parser.parse_args()
+
+
+def load_baseline_metrics(metrics_dir: Path) -> dict:
+    baseline_path = metrics_dir / "baseline_metrics.json"
+    if not baseline_path.exists():
+        return {}
+    return load_json(baseline_path)
 
 
 def main() -> None:
@@ -60,26 +67,46 @@ def main() -> None:
     controller.load_state_dict(torch.load(checkpoint_path, map_location=device))
     controller.to(device)
     test_metrics = evaluate_controller(early_exit_model, controller, dataloaders["test"], device)
+    metrics_dir = PROJECT_ROOT / config["outputs"]["metrics_dir"]
+    baseline = load_baseline_metrics(metrics_dir)
+    flops_per_sample = (
+        baseline.get("flops_per_sample") * test_metrics["average_flops_ratio"]
+        if baseline.get("flops_per_sample") is not None
+        else None
+    )
+    latency_ms = (
+        baseline.get("latency_ms") * test_metrics["average_flops_ratio"]
+        if baseline.get("latency_ms") is not None
+        else None
+    )
+    co2_kg = (
+        baseline.get("co2_kg") * test_metrics["average_flops_ratio"]
+        if baseline.get("co2_kg") is not None
+        else None
+    )
 
     payload = {
         "config": config,
         "train_result": train_result,
         "test_metrics": test_metrics,
+        "flops_per_sample": flops_per_sample,
+        "latency_ms": latency_ms,
+        "co2_kg": co2_kg,
     }
     write_metrics_json(config["outputs"]["metrics_dir"], "controller_results.json", payload)
-    append_comparison_row(
+    upsert_comparison_row(
         config["outputs"]["metrics_dir"],
         {
             "method": f"learned_controller_{config['supervision_strategy']}",
             "accuracy": test_metrics["accuracy"],
-            "flops_per_sample": None,
+            "flops_per_sample": flops_per_sample,
             "flops_reduction": test_metrics["flops_reduction"],
-            "latency_ms": None,
-            "latency_reduction": None,
-            "co2_kg": None,
-            "co2_reduction": None,
+            "latency_ms": latency_ms,
+            "latency_reduction": test_metrics["flops_reduction"],
+            "co2_kg": co2_kg,
+            "co2_reduction": test_metrics["flops_reduction"],
             "avg_exit": test_metrics["avg_exit"],
-            "notes": "Controller metrics use learned exit decisions; direct latency/emissions estimation still pending.",
+            "notes": "Latency and emissions are scaled from the baseline using average FLOPs ratio.",
         },
     )
 
