@@ -10,3 +10,9 @@ checkpoints/*.pt
 outputs/metrics/*.json
 outputs/metrics/*.csv
 outputs/plots/*.png
+
+# Downloaded datasets
+scripts/data/
+
+# Generated outputs
+scripts/outputs/

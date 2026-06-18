@@ -61,6 +61,9 @@ class EarlyExitResNet18(nn.Module):
         logits, _ = self.forward_with_intermediates(x)
         return logits
 
+    def forward_all_exits(self, x: torch.Tensor) -> list[torch.Tensor]:
+        return self.forward(x)
+
     def forward_with_intermediates(self, x: torch.Tensor) -> tuple[list[torch.Tensor], list[torch.Tensor]]:
         feature_maps: list[torch.Tensor] = []
         logits: list[torch.Tensor] = []

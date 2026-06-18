@@ -101,3 +101,29 @@ CONTROLLER_DEFAULTS: dict[str, Any] = merge_defaults(
     },
     EARLY_EXIT_DEFAULTS,
 )
+
+
+REINFORCE_CONTROLLER_DEFAULTS: dict[str, Any] = merge_defaults(
+    {
+        "checkpoint_path": "checkpoints/early_exit_best.pt",
+        "warm_start_checkpoint": "checkpoints/controller_best.pt",
+        "reinforce_checkpoint_path": "checkpoints/reinforce_controller_best.pt",
+        "reinforce_last_checkpoint_path": "checkpoints/reinforce_controller_last.pt",
+        "supervised_warm_start": True,
+        "lambda_cost": 0.20,
+        "wrong_penalty": 0.0,
+        "entropy_beta": 0.005,
+        "baseline_momentum": 0.90,
+        "gradient_clip_norm": 1.0,
+        "controller": {
+            "input_dim": 5,
+            "hidden_dim": 32,
+        },
+        "training": {
+            "epochs": 30,
+            "learning_rate": 0.001,
+            "weight_decay": 0.00001,
+        },
+    },
+    EARLY_EXIT_DEFAULTS,
+)

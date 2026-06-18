@@ -48,7 +48,7 @@ To answer this, the project compares three exit-decision strategies:
 - **Task:** Image classification
 - **Dataset:** CIFAR-10
 - **Framework:** PyTorch
-- **Efficiency tracking:** FLOPs, latency, and CodeCarbon emissions
+- **Efficiency tracking:** FLOPs (Floating Point Operations), latency, and CodeCarbon emissions
 - **Main comparison:** Full ResNet-18 vs early-exit ResNet-18 variants
 
 ---
