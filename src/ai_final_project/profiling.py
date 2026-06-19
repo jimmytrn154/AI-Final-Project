@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import time
+from statistics import pstdev
 from typing import Any, Callable
 
 import torch
+from torch.utils.data import DataLoader
 
 try:
     from codecarbon import EmissionsTracker
@@ -36,6 +38,56 @@ def measure_latency(
             torch.cuda.synchronize(device)
         elapsed = time.perf_counter() - start
     return (elapsed / runs) * 1000.0
+
+
+def benchmark_dataloader_latency(
+    infer_fn: Callable[[torch.Tensor], Any],
+    dataloader: DataLoader,
+    device: torch.device,
+    warmup_batches: int = 3,
+    timed_batches: int | None = None,
+) -> dict[str, float]:
+    per_sample_latencies: list[float] = []
+    total_elapsed = 0.0
+    total_samples = 0
+    measured_batches = 0
+
+    with torch.no_grad():
+        for batch_index, (images, _) in enumerate(dataloader):
+            images = images.to(device)
+
+            if batch_index < warmup_batches:
+                _ = infer_fn(images)
+                if device.type == "cuda":
+                    torch.cuda.synchronize(device)
+                continue
+
+            if timed_batches is not None and measured_batches >= timed_batches:
+                break
+
+            if device.type == "cuda":
+                torch.cuda.synchronize(device)
+            start = time.perf_counter()
+            _ = infer_fn(images)
+            if device.type == "cuda":
+                torch.cuda.synchronize(device)
+            elapsed = time.perf_counter() - start
+
+            batch_size = images.size(0)
+            total_elapsed += elapsed
+            total_samples += batch_size
+            per_sample_latencies.append((elapsed / batch_size) * 1000.0)
+            measured_batches += 1
+
+    if total_samples == 0:
+        return {"latency_ms": 0.0, "latency_std_ms": 0.0}
+
+    mean_latency_ms = (total_elapsed / total_samples) * 1000.0
+    std_latency_ms = pstdev(per_sample_latencies) if len(per_sample_latencies) > 1 else 0.0
+    return {
+        "latency_ms": mean_latency_ms,
+        "latency_std_ms": std_latency_ms,
+    }
 
 
 def estimate_flops(model: torch.nn.Module, sample: torch.Tensor) -> float | None:

@@ -22,7 +22,7 @@
     "hidden_dim": 32
   },
   "training": {
-    "epochs": 30,
+    "epochs": 15,
     "learning_rate": 0.001,
     "weight_decay": 0.00001
   },

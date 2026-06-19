@@ -1,0 +1,1 @@
+CUDA_VISIBLE_DEVICES=1 python3 scripts/train_controller.py --config configs/controller.json --run-name 2026-06-19-direct-latency

@@ -9,11 +9,12 @@ import torch
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
-from ai_final_project.config import REINFORCE_CONTROLLER_DEFAULTS, load_json, merge_defaults
+from ai_final_project.config import REINFORCE_CONTROLLER_DEFAULTS, load_json, merge_defaults, resolve_run_outputs
 from ai_final_project.controller import ExitController, evaluate_reinforce_controller
 from ai_final_project.data import create_cifar10_dataloaders
+from ai_final_project.evaluation import benchmark_reinforce_controller_latency
 from ai_final_project.models import EarlyExitResNet18
-from ai_final_project.results import upsert_comparison_row, write_metrics_json
+from ai_final_project.results import bootstrap_run_metrics, upsert_comparison_row, write_metrics_json
 from ai_final_project.training import train_reinforce_controller
 from ai_final_project.utils import resolve_device, set_seed
 
@@ -21,6 +22,7 @@ from ai_final_project.utils import resolve_device, set_seed
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Train the REINFORCE exit controller.")
     parser.add_argument("--config", default="configs/reinforce_controller.json")
+    parser.add_argument("--run-name", default=None)
     return parser.parse_args()
 
 
@@ -34,6 +36,7 @@ def load_baseline_metrics(metrics_dir: Path) -> dict:
 def main() -> None:
     args = parse_args()
     config = merge_defaults(load_json(PROJECT_ROOT / args.config), REINFORCE_CONTROLLER_DEFAULTS)
+    config = resolve_run_outputs(config, PROJECT_ROOT, args.run_name)
     set_seed(config["seed"])
     device = resolve_device(config["device"])
 
@@ -74,7 +77,9 @@ def main() -> None:
         lambda_cost=config["lambda_cost"],
         wrong_penalty=config.get("wrong_penalty", 0.0),
     )
+    latency_metrics = benchmark_reinforce_controller_latency(early_exit_model, controller, dataloaders["test"], device)
 
+    bootstrap_run_metrics(PROJECT_ROOT, config["outputs"])
     metrics_dir = PROJECT_ROOT / config["outputs"]["metrics_dir"]
     baseline = load_baseline_metrics(metrics_dir)
     flops_per_sample = (
@@ -82,9 +87,12 @@ def main() -> None:
         if baseline.get("flops_per_sample") is not None
         else None
     )
-    latency_ms = (
-        baseline.get("latency_ms") * test_metrics["average_flops_ratio"]
-        if baseline.get("latency_ms") is not None
+    baseline_latency = baseline.get("latency_ms")
+    latency_ms = latency_metrics["latency_ms"]
+    latency_std_ms = latency_metrics["latency_std_ms"]
+    latency_reduction = (
+        1.0 - (latency_ms / baseline_latency)
+        if baseline_latency not in (None, 0)
         else None
     )
     co2_kg = (
@@ -99,6 +107,7 @@ def main() -> None:
         "test_metrics": test_metrics,
         "flops_per_sample": flops_per_sample,
         "latency_ms": latency_ms,
+        "latency_std_ms": latency_std_ms,
         "co2_kg": co2_kg,
     }
     write_metrics_json(config["outputs"]["metrics_dir"], "reinforce_controller_results.json", payload)
@@ -110,11 +119,11 @@ def main() -> None:
             "flops_per_sample": flops_per_sample,
             "flops_reduction": test_metrics["flops_reduction"],
             "latency_ms": latency_ms,
-            "latency_reduction": test_metrics["flops_reduction"],
+            "latency_reduction": latency_reduction,
             "co2_kg": co2_kg,
             "co2_reduction": test_metrics["flops_reduction"],
             "avg_exit": test_metrics["avg_exit"],
-            "notes": "Latency and emissions are scaled from the baseline using average FLOPs ratio.",
+            "notes": "Latency is measured directly with conditional execution; CO2 is scaled from the baseline using average FLOPs ratio.",
         },
     )
 

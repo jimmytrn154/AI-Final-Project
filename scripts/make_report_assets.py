@@ -8,7 +8,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
-from ai_final_project.config import BASE_DEFAULTS, load_json, merge_defaults
+from ai_final_project.config import BASE_DEFAULTS, load_json, merge_defaults, resolve_run_outputs
 
 try:
     import matplotlib.pyplot as plt
@@ -19,6 +19,7 @@ except ImportError as error:  # pragma: no cover
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate comparison plots from experiment outputs.")
     parser.add_argument("--config", default="configs/baseline.json")
+    parser.add_argument("--run-name", default=None)
     return parser.parse_args()
 
 
@@ -81,6 +82,7 @@ def save_bar(rows: list[dict[str, str]], metric_key: str, output_path: Path, tit
 def main() -> None:
     args = parse_args()
     config = merge_defaults(load_json(PROJECT_ROOT / args.config), BASE_DEFAULTS)
+    config = resolve_run_outputs(config, PROJECT_ROOT, args.run_name)
     metrics_dir = PROJECT_ROOT / config["outputs"]["metrics_dir"]
     plots_dir = PROJECT_ROOT / config["outputs"]["plots_dir"]
     plots_dir.mkdir(parents=True, exist_ok=True)

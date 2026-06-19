@@ -66,8 +66,10 @@
 - The learned controller is too aggressive in its current form, exiting at Exit 1 for 80.39% of samples and dropping accuracy to 73.64%.
 - The REINFORCE controller improves substantially over the supervised controller, but still does not beat the best fixed-threshold result on accuracy.
 - Threshold and controller latency/emissions are baseline-scaled estimates rather than direct measurements.
-- Show the tau ablation study, reward function for RL training, show accuracy for val/test across baselines, try cifar
-- Compute stats value, average accuracy, variance of accuracy, remsemble/randomly sample the dataset, 
+
+## Plan for further experiment setups
+- Show the tau ablation study, reward function for RL training (i.e., lambda choice), show accuracy for val/test across baselines, try cifar-100 also.
+- Compute stats value, average accuracy, variance of accuracy, remsemble/randomly sample the dataset, etc.
 
 ## Decisions and Assumptions
 - `PROGRESS.md` is the primary working tracker; `extraPlan.md` remains a strategy reference.

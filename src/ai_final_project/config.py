@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from copy import deepcopy
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -50,8 +51,66 @@ BASE_DEFAULTS: dict[str, Any] = {
         "checkpoint_dir": "checkpoints",
         "metrics_dir": "outputs/metrics",
         "plots_dir": "outputs/plots",
+        "run_name": None,
+        "runs_root": "outputs/runs",
+        "reference_metrics_dir": "outputs/metrics",
     },
 }
+
+
+def resolve_run_outputs(
+    config: dict[str, Any],
+    project_root: str | Path,
+    run_name_override: str | None = None,
+) -> dict[str, Any]:
+    resolved = deepcopy(config)
+    outputs = resolved.setdefault("outputs", {})
+    outputs.setdefault("run_name", None)
+    outputs.setdefault("runs_root", "outputs/runs")
+    outputs.setdefault("reference_metrics_dir", "outputs/metrics")
+
+    run_name = run_name_override if run_name_override is not None else outputs.get("run_name")
+    if not run_name:
+        return resolved
+
+    legacy_checkpoint_dir = Path(outputs["checkpoint_dir"])
+    outputs["run_name"] = run_name
+    run_root = Path(outputs["runs_root"]) / run_name
+    checkpoint_dir = run_root / "checkpoints"
+    metrics_dir = run_root / "metrics"
+    plots_dir = run_root / "plots"
+
+    outputs["checkpoint_dir"] = str(checkpoint_dir)
+    outputs["metrics_dir"] = str(metrics_dir)
+    outputs["plots_dir"] = str(plots_dir)
+
+    managed_checkpoint_keys = (
+        "controller_checkpoint_path",
+        "warm_start_checkpoint",
+        "reinforce_checkpoint_path",
+        "reinforce_last_checkpoint_path",
+    )
+    for key in managed_checkpoint_keys:
+        if key in resolved:
+            current_path = Path(resolved[key])
+            if current_path.parent == legacy_checkpoint_dir:
+                resolved[key] = str(checkpoint_dir / current_path.name)
+
+    manifest_path = Path(project_root) / run_root / "run_manifest.json"
+    if not manifest_path.exists():
+        save_json(
+            manifest_path,
+            {
+                "run_name": run_name,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "reference_metrics_dir": outputs["reference_metrics_dir"],
+                "checkpoint_dir": outputs["checkpoint_dir"],
+                "metrics_dir": outputs["metrics_dir"],
+                "plots_dir": outputs["plots_dir"],
+            },
+        )
+
+    return resolved
 
 
 EARLY_EXIT_DEFAULTS: dict[str, Any] = merge_defaults(

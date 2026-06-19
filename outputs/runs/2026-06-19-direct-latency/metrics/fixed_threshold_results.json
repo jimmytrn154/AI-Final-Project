@@ -1,0 +1,173 @@
+{
+  "best_result": {
+    "accuracy": 0.8753,
+    "alpha": 0.0,
+    "average_flops_ratio": 0.572718000000035,
+    "avg_exit": 2.5076,
+    "estimated_co2_kg": 5.2866782105230946e-05,
+    "estimated_flops_per_sample": 319513086.0472515,
+    "exit_distribution": {
+      "exit_1": 0.1094,
+      "exit_2": 0.5099,
+      "exit_3": 0.1444,
+      "final_exit": 0.2363
+    },
+    "flops_reduction": 0.42728199999996497,
+    "latency_ms": 0.07474090346714758,
+    "latency_reduction": 0.9657494429064785,
+    "latency_std_ms": 0.06786612642194613,
+    "strategy": "fixed",
+    "threshold": 0.95
+  },
+  "config": {
+    "checkpoint_path": "checkpoints/early_exit_best.pt",
+    "data": {
+      "batch_size": 128,
+      "normalize_mean": [
+        0.4914,
+        0.4822,
+        0.4465
+      ],
+      "normalize_std": [
+        0.2023,
+        0.1994,
+        0.201
+      ],
+      "root": "data",
+      "val_split": 0.1
+    },
+    "device": "auto",
+    "experiment_name": "fixed_threshold_sweep",
+    "num_workers": 2,
+    "outputs": {
+      "checkpoint_dir": "outputs/runs/2026-06-19-direct-latency/checkpoints",
+      "metrics_dir": "outputs/runs/2026-06-19-direct-latency/metrics",
+      "plots_dir": "outputs/runs/2026-06-19-direct-latency/plots",
+      "reference_metrics_dir": "outputs/metrics",
+      "run_name": "2026-06-19-direct-latency",
+      "runs_root": "outputs/runs"
+    },
+    "seed": 42,
+    "thresholds": [
+      0.6,
+      0.7,
+      0.8,
+      0.9,
+      0.95
+    ],
+    "training": {
+      "epochs": 25,
+      "label_smoothing": 0.0,
+      "learning_rate": 0.001,
+      "loss_weights": [
+        0.3,
+        0.5,
+        0.7,
+        1.0
+      ],
+      "weight_decay": 0.0001
+    }
+  },
+  "results": [
+    {
+      "accuracy": 0.8081,
+      "alpha": 0.0,
+      "average_flops_ratio": 0.3298079999999769,
+      "avg_exit": 1.5128,
+      "estimated_co2_kg": 3.0444106301111053e-05,
+      "estimated_flops_per_sample": 183996263.2273791,
+      "exit_distribution": {
+        "exit_1": 0.584,
+        "exit_2": 0.3432,
+        "exit_3": 0.0488,
+        "final_exit": 0.024
+      },
+      "flops_reduction": 0.6701920000000231,
+      "latency_ms": 0.0864380726822421,
+      "latency_reduction": 0.96038913090262,
+      "latency_std_ms": 0.08722562865215122,
+      "strategy": "fixed",
+      "threshold": 0.6
+    },
+    {
+      "accuracy": 0.8401,
+      "alpha": 0.0,
+      "average_flops_ratio": 0.38168199999997976,
+      "avg_exit": 1.7356,
+      "estimated_co2_kg": 3.523252128881309e-05,
+      "estimated_flops_per_sample": 212936198.4583567,
+      "exit_distribution": {
+        "exit_1": 0.4515,
+        "exit_2": 0.417,
+        "exit_3": 0.0759,
+        "final_exit": 0.0556
+      },
+      "flops_reduction": 0.6183180000000202,
+      "latency_ms": 0.08305194559111918,
+      "latency_reduction": 0.9619408480197592,
+      "latency_std_ms": 0.8195601457743033,
+      "strategy": "fixed",
+      "threshold": 0.7
+    },
+    {
+      "accuracy": 0.8602,
+      "alpha": 0.0,
+      "average_flops_ratio": 0.43716199999999783,
+      "avg_exit": 1.9656,
+      "estimated_co2_kg": 4.0353800995752613e-05,
+      "estimated_flops_per_sample": 243887881.5098868,
+      "exit_distribution": {
+        "exit_1": 0.3353,
+        "exit_2": 0.4636,
+        "exit_3": 0.1013,
+        "final_exit": 0.0998
+      },
+      "flops_reduction": 0.5628380000000022,
+      "latency_ms": 0.0691087064685799,
+      "latency_reduction": 0.9683304377287607,
+      "latency_std_ms": 0.05353106264591842,
+      "strategy": "fixed",
+      "threshold": 0.8
+    },
+    {
+      "accuracy": 0.8715,
+      "alpha": 0.0,
+      "average_flops_ratio": 0.5131240000000253,
+      "avg_exit": 2.2735,
+      "estimated_co2_kg": 4.7365744923268006e-05,
+      "estimated_flops_per_sample": 286266247.55099016,
+      "exit_distribution": {
+        "exit_1": 0.1955,
+        "exit_2": 0.5069,
+        "exit_3": 0.1262,
+        "final_exit": 0.1714
+      },
+      "flops_reduction": 0.48687599999997466,
+      "latency_ms": 0.07347413663172818,
+      "latency_reduction": 0.9663299479286017,
+      "latency_std_ms": 0.05991791397021388,
+      "strategy": "fixed",
+      "threshold": 0.9
+    },
+    {
+      "accuracy": 0.8753,
+      "alpha": 0.0,
+      "average_flops_ratio": 0.572718000000035,
+      "avg_exit": 2.5076,
+      "estimated_co2_kg": 5.2866782105230946e-05,
+      "estimated_flops_per_sample": 319513086.0472515,
+      "exit_distribution": {
+        "exit_1": 0.1094,
+        "exit_2": 0.5099,
+        "exit_3": 0.1444,
+        "final_exit": 0.2363
+      },
+      "flops_reduction": 0.42728199999996497,
+      "latency_ms": 0.07474090346714758,
+      "latency_reduction": 0.9657494429064785,
+      "latency_std_ms": 0.06786612642194613,
+      "strategy": "fixed",
+      "threshold": 0.95
+    }
+  ]
+}

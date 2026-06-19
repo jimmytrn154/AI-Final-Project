@@ -1,0 +1,1 @@
+CUDA_VISIBLE_DEVICES=1 python3 scripts/train_reinforce_controller.py --config configs/reinforce_controller.json --run-name 2026-06-19-direct-latency

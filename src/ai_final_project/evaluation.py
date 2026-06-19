@@ -7,6 +7,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from .metrics import accuracy_from_logits, softmax_confidence
+from .profiling import benchmark_dataloader_latency
 
 
 def evaluate_classifier(
@@ -151,3 +152,61 @@ def evaluate_exit_strategy(
         "alpha": alpha,
         "strategy": strategy,
     }
+
+
+def benchmark_exit_strategy_latency(
+    model: torch.nn.Module,
+    dataloader: DataLoader,
+    device: torch.device,
+    strategy: str,
+    threshold: float,
+    alpha: float = 0.0,
+    warmup_batches: int = 3,
+    timed_batches: int | None = None,
+) -> dict[str, float]:
+    model.eval()
+    return benchmark_dataloader_latency(
+        lambda images: model.forward_with_policy(images, strategy, threshold, alpha),
+        dataloader,
+        device,
+        warmup_batches=warmup_batches,
+        timed_batches=timed_batches,
+    )
+
+
+def benchmark_controller_latency(
+    model: torch.nn.Module,
+    controller: torch.nn.Module,
+    dataloader: DataLoader,
+    device: torch.device,
+    warmup_batches: int = 3,
+    timed_batches: int | None = None,
+) -> dict[str, float]:
+    model.eval()
+    controller.eval()
+    return benchmark_dataloader_latency(
+        lambda images: model.forward_with_supervised_controller(images, controller),
+        dataloader,
+        device,
+        warmup_batches=warmup_batches,
+        timed_batches=timed_batches,
+    )
+
+
+def benchmark_reinforce_controller_latency(
+    model: torch.nn.Module,
+    controller: torch.nn.Module,
+    dataloader: DataLoader,
+    device: torch.device,
+    warmup_batches: int = 3,
+    timed_batches: int | None = None,
+) -> dict[str, float]:
+    model.eval()
+    controller.eval()
+    return benchmark_dataloader_latency(
+        lambda images: model.forward_with_reinforce_controller(images, controller),
+        dataloader,
+        device,
+        warmup_batches=warmup_batches,
+        timed_batches=timed_batches,
+    )

@@ -1,0 +1,1 @@
+CUDA_VISIBLE_DEVICES=1 python3 scripts/run_dynamic_threshold.py --config configs/dynamic_threshold.json --run-name 2026-06-19-direct-latency

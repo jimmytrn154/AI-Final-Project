@@ -1,0 +1,273 @@
+{
+  "co2_kg": 3.9849980796755225e-05,
+  "config": {
+    "baseline_momentum": 0.9,
+    "checkpoint_path": "checkpoints/early_exit_best.pt",
+    "controller": {
+      "hidden_dim": 32,
+      "input_dim": 5
+    },
+    "data": {
+      "batch_size": 128,
+      "normalize_mean": [
+        0.4914,
+        0.4822,
+        0.4465
+      ],
+      "normalize_std": [
+        0.2023,
+        0.1994,
+        0.201
+      ],
+      "root": "data",
+      "val_split": 0.1
+    },
+    "device": "auto",
+    "entropy_beta": 0.005,
+    "gradient_clip_norm": 1.0,
+    "lambda_cost": 0.2,
+    "num_workers": 2,
+    "outputs": {
+      "checkpoint_dir": "outputs/runs/2026-06-19-direct-latency/checkpoints",
+      "metrics_dir": "outputs/runs/2026-06-19-direct-latency/metrics",
+      "plots_dir": "outputs/runs/2026-06-19-direct-latency/plots",
+      "reference_metrics_dir": "outputs/metrics",
+      "run_name": "2026-06-19-direct-latency",
+      "runs_root": "outputs/runs"
+    },
+    "reinforce_checkpoint_path": "outputs/runs/2026-06-19-direct-latency/checkpoints/reinforce_controller_best.pt",
+    "reinforce_last_checkpoint_path": "outputs/runs/2026-06-19-direct-latency/checkpoints/reinforce_controller_last.pt",
+    "seed": 42,
+    "supervised_warm_start": true,
+    "training": {
+      "epochs": 15,
+      "label_smoothing": 0.0,
+      "learning_rate": 0.001,
+      "loss_weights": [
+        0.3,
+        0.5,
+        0.7,
+        1.0
+      ],
+      "weight_decay": 1e-05
+    },
+    "warm_start_checkpoint": "outputs/runs/2026-06-19-direct-latency/checkpoints/controller_best.pt",
+    "wrong_penalty": 0.0
+  },
+  "flops_per_sample": 240842923.2169048,
+  "latency_ms": 0.08498172732085585,
+  "latency_std_ms": 0.10202764326126677,
+  "test_metrics": {
+    "accuracy": 0.8691,
+    "average_flops_ratio": 0.43170400000001574,
+    "average_reward": 0.782759193611145,
+    "avg_exit": 2.0047,
+    "exit_distribution": {
+      "exit_1": 0.1644,
+      "exit_2": 0.6768,
+      "exit_3": 0.1485,
+      "final_exit": 0.0103
+    },
+    "flops_reduction": 0.5682959999999843
+  },
+  "train_result": {
+    "best_val_reward": 0.7900135902404786,
+    "history": [
+      {
+        "average_flops_ratio": 0.43020000000002256,
+        "epoch": 1,
+        "exit_1_rate": 0.2818,
+        "exit_2_rate": 0.5358,
+        "exit_3_rate": 0.1226,
+        "final_exit_rate": 0.0598,
+        "policy_entropy": 0.5631827366623011,
+        "policy_loss": -0.017683691753270316,
+        "train_reward": 0.809525291012092,
+        "val_accuracy": 0.868,
+        "val_reward": 0.7819599861145019
+      },
+      {
+        "average_flops_ratio": 0.39126000000002426,
+        "epoch": 2,
+        "exit_1_rate": 0.3276,
+        "exit_2_rate": 0.5494,
+        "exit_3_rate": 0.108,
+        "final_exit_rate": 0.015,
+        "policy_entropy": 0.30218520146709954,
+        "policy_loss": -0.022979388255903774,
+        "train_reward": 0.8359988079490986,
+        "val_accuracy": 0.8598,
+        "val_reward": 0.7815479892730713
+      },
+      {
+        "average_flops_ratio": 0.4082120000000258,
+        "epoch": 3,
+        "exit_1_rate": 0.2404,
+        "exit_2_rate": 0.6306,
+        "exit_3_rate": 0.1204,
+        "final_exit_rate": 0.0086,
+        "policy_entropy": 0.2613592975857583,
+        "policy_loss": -0.02116851901254532,
+        "train_reward": 0.8384263850748539,
+        "val_accuracy": 0.8688,
+        "val_reward": 0.7871575885772705
+      },
+      {
+        "average_flops_ratio": 0.43180800000002484,
+        "epoch": 4,
+        "exit_1_rate": 0.1522,
+        "exit_2_rate": 0.6954,
+        "exit_3_rate": 0.1442,
+        "final_exit_rate": 0.0082,
+        "policy_entropy": 0.23084880741821093,
+        "policy_loss": -0.01768095255829394,
+        "train_reward": 0.8393747469579632,
+        "val_accuracy": 0.8746,
+        "val_reward": 0.7882383979797364
+      },
+      {
+        "average_flops_ratio": 0.4085880000000258,
+        "epoch": 5,
+        "exit_1_rate": 0.2326,
+        "exit_2_rate": 0.64,
+        "exit_3_rate": 0.1212,
+        "final_exit_rate": 0.0062,
+        "policy_entropy": 0.20494804074141112,
+        "policy_loss": -0.014298248904279635,
+        "train_reward": 0.8399916792457754,
+        "val_accuracy": 0.8686,
+        "val_reward": 0.7868823856353759
+      },
+      {
+        "average_flops_ratio": 0.4299320000000247,
+        "epoch": 6,
+        "exit_1_rate": 0.1736,
+        "exit_2_rate": 0.6682,
+        "exit_3_rate": 0.1472,
+        "final_exit_rate": 0.011,
+        "policy_entropy": 0.1907354931093075,
+        "policy_loss": -0.012744976166355958,
+        "train_reward": 0.8402567118067633,
+        "val_accuracy": 0.876,
+        "val_reward": 0.7900135902404786
+      },
+      {
+        "average_flops_ratio": 0.4323000000000247,
+        "epoch": 7,
+        "exit_1_rate": 0.1506,
+        "exit_2_rate": 0.6956,
+        "exit_3_rate": 0.1462,
+        "final_exit_rate": 0.0076,
+        "policy_entropy": 0.18046720827591012,
+        "policy_loss": -0.013409602926086254,
+        "train_reward": 0.8403995990414511,
+        "val_accuracy": 0.8752,
+        "val_reward": 0.7887399909973144
+      },
+      {
+        "average_flops_ratio": 0.440024000000025,
+        "epoch": 8,
+        "exit_1_rate": 0.11,
+        "exit_2_rate": 0.7328,
+        "exit_3_rate": 0.1536,
+        "final_exit_rate": 0.0036,
+        "policy_entropy": 0.17210951168090105,
+        "policy_loss": -0.012320623550212158,
+        "train_reward": 0.839614994993264,
+        "val_accuracy": 0.8774,
+        "val_reward": 0.7893952018737793
+      },
+      {
+        "average_flops_ratio": 0.4410880000000242,
+        "epoch": 9,
+        "exit_1_rate": 0.1362,
+        "exit_2_rate": 0.6922,
+        "exit_3_rate": 0.16,
+        "final_exit_rate": 0.0116,
+        "policy_entropy": 0.16012301588092337,
+        "policy_loss": -0.010774928827066271,
+        "train_reward": 0.839175392111594,
+        "val_accuracy": 0.878,
+        "val_reward": 0.78978239402771
+      },
+      {
+        "average_flops_ratio": 0.41130400000002565,
+        "epoch": 10,
+        "exit_1_rate": 0.232,
+        "exit_2_rate": 0.6316,
+        "exit_3_rate": 0.1294,
+        "final_exit_rate": 0.007,
+        "policy_entropy": 0.15988936050879685,
+        "policy_loss": -0.010319639305056295,
+        "train_reward": 0.8409102025695823,
+        "val_accuracy": 0.8698,
+        "val_reward": 0.7875391819000244
+      },
+      {
+        "average_flops_ratio": 0.4271120000000249,
+        "epoch": 11,
+        "exit_1_rate": 0.1822,
+        "exit_2_rate": 0.6626,
+        "exit_3_rate": 0.1452,
+        "final_exit_rate": 0.01,
+        "policy_entropy": 0.14621443654918534,
+        "policy_loss": -0.011186461894216005,
+        "train_reward": 0.8418996549126777,
+        "val_accuracy": 0.875,
+        "val_reward": 0.7895775993347168
+      },
+      {
+        "average_flops_ratio": 0.43173600000002443,
+        "epoch": 12,
+        "exit_1_rate": 0.171,
+        "exit_2_rate": 0.6666,
+        "exit_3_rate": 0.1508,
+        "final_exit_rate": 0.0116,
+        "policy_entropy": 0.14666768370873548,
+        "policy_loss": -0.010391832483698883,
+        "train_reward": 0.8407404851168394,
+        "val_accuracy": 0.8756,
+        "val_reward": 0.7892527885437012
+      },
+      {
+        "average_flops_ratio": 0.4038880000000257,
+        "epoch": 13,
+        "exit_1_rate": 0.2318,
+        "exit_2_rate": 0.6526,
+        "exit_3_rate": 0.115,
+        "final_exit_rate": 0.0006,
+        "policy_entropy": 0.13872167927382345,
+        "policy_loss": -0.009487944388431722,
+        "train_reward": 0.8418486494232308,
+        "val_accuracy": 0.8664,
+        "val_reward": 0.7856223926544189
+      },
+      {
+        "average_flops_ratio": 0.4014760000000254,
+        "epoch": 14,
+        "exit_1_rate": 0.252,
+        "exit_2_rate": 0.6286,
+        "exit_3_rate": 0.1168,
+        "final_exit_rate": 0.0026,
+        "policy_entropy": 0.13399721269326453,
+        "policy_loss": -0.00859876626286264,
+        "train_reward": 0.8426872571422295,
+        "val_accuracy": 0.8658,
+        "val_reward": 0.7855047870635986
+      },
+      {
+        "average_flops_ratio": 0.4207960000000255,
+        "epoch": 15,
+        "exit_1_rate": 0.194,
+        "exit_2_rate": 0.6606,
+        "exit_3_rate": 0.1398,
+        "final_exit_rate": 0.0056,
+        "policy_entropy": 0.13059107777239246,
+        "policy_loss": -0.0070611205192934986,
+        "train_reward": 0.8422529434954579,
+        "val_accuracy": 0.8734,
+        "val_reward": 0.7892407966613769
+      }
+    ]
+  }
+}
