@@ -1,0 +1,3 @@
+[submodule "external/PaperOrchestra"]
+	path = external/PaperOrchestra
+	url = https://github.com/Ar9av/PaperOrchestra.git

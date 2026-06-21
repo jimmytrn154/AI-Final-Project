@@ -1,0 +1,374 @@
+```latex
+\documentclass[10pt,twocolumn]{article}
+
+% ------------------------------------------------------------------
+% IEEE/top-conference-inspired compact report template
+% For COMP2050 AI Programming Project / PaperOrchestra workflow.
+%
+% PaperOrchestra/Codex instructions:
+% - Fill TODO placeholders using workspace/inputs/idea.md,
+%   workspace/inputs/experimental_log.md, and conference_guidelines.md.
+% - Do not invent metrics, datasets, citations, or experimental results.
+% - All numeric claims must come from the metrics files listed in
+%   experimental_log.md.
+% ------------------------------------------------------------------
+
+% Encoding and typography
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{times}
+\usepackage{microtype}
+
+% Page layout: compact two-column style
+\usepackage[
+    letterpaper,
+    margin=0.72in,
+    columnsep=0.24in
+]{geometry}
+
+% Math and symbols
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+
+% Figures, tables, and captions
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{caption}
+\usepackage{subcaption}
+
+% References and links
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xcolor}
+
+% Lists and spacing
+\usepackage{enumitem}
+\setlist{nosep,leftmargin=*}
+
+% Section spacing: compact conference-like layout
+\usepackage{titlesec}
+\titlespacing*{\section}{0pt}{0.85em}{0.45em}
+\titlespacing*{\subsection}{0pt}{0.65em}{0.35em}
+\titlespacing*{\subsubsection}{0pt}{0.5em}{0.25em}
+
+% Caption style
+\captionsetup{
+    font=small,
+    labelfont=bf,
+    skip=4pt
+}
+
+% Reduce float spacing
+\setlength{\textfloatsep}{8pt plus 1pt minus 2pt}
+\setlength{\floatsep}{6pt plus 1pt minus 2pt}
+\setlength{\intextsep}{6pt plus 1pt minus 2pt}
+
+% Optional helpers
+\newcommand{\methodname}{Budget-Aware Early Exiting}
+\newcommand{\dataset}{CIFAR-10}
+\newcommand{\backbone}{ResNet-18}
+
+\title{\vspace{-1.0em}
+Learning When to Stop: Budget-Aware Early Exiting for Energy-Efficient CNN Inference
+\vspace{-0.4em}
+}
+
+\author{
+Tran Anh Chuong\\
+VinUniversity\\
+COMP2050 -- Artificial Intelligence Programming Project\\
+\texttt{TODO: student email if required}
+}
+
+\date{}
+
+\begin{document}
+
+\twocolumn[
+\maketitle
+
+\begin{abstract}
+TODO(section-writing-agent): Write a one-paragraph abstract summarizing the problem, the proposed early-exit ResNet-18 approach, the compared exit policies, the CIFAR-10 experimental setup, and the main accuracy-efficiency finding. Use only verified metrics from experimental_log.md.
+\end{abstract}
+
+\vspace{0.8em}
+]
+
+% ------------------------------------------------------------------
+\section{Introduction}
+% ------------------------------------------------------------------
+
+TODO(literature-review-agent): Motivate Green AI, efficient inference, adaptive computation, and early exiting. Explain why full CNN inference can waste computation on easy inputs. Introduce the central question: whether a CNN can learn when to stop computation to reduce FLOPs, latency, and estimated emissions while preserving accuracy.
+
+TODO(section-writing-agent): State the project contributions clearly. Suggested contribution framing:
+\begin{itemize}
+    \item an early-exit \backbone{} architecture for \dataset{};
+    \item a comparison of fixed-threshold, dynamic-threshold, supervised-controller, and REINFORCE-based exit policies;
+    \item an empirical evaluation of accuracy, FLOPs, latency, estimated CO$_2$, and exit behavior;
+    \item an analysis of the accuracy-efficiency tradeoff and limitations.
+\end{itemize}
+
+% ------------------------------------------------------------------
+\section{Related Work}
+% ------------------------------------------------------------------
+
+TODO(literature-review-agent): Cover efficient neural inference, early-exit networks, dynamic neural networks, adaptive computation, confidence-based exiting, learned routing/controller policies, and energy-aware or Green AI. Use verified citations only. Do not invent references.
+
+% ------------------------------------------------------------------
+\section{Methodology}
+% ------------------------------------------------------------------
+
+TODO(section-writing-agent): Explain the full pipeline and algorithmic variations. Use subsections below.
+
+\subsection{Baseline Model}
+
+TODO(section-writing-agent): Describe the full \backbone{} classifier on \dataset{}. Explain that this baseline performs a complete forward pass for every image and serves as the reference for accuracy, FLOPs, latency, and emissions.
+
+\subsection{Early-Exit Architecture}
+
+TODO(section-writing-agent): Describe the modified \backbone{} with auxiliary classifiers after intermediate stages. Explain that each exit outputs logits, probabilities, confidence, and a prediction.
+
+For exit $i$, the probability vector is:
+\begin{equation}
+    p_i = \operatorname{softmax}(z_i),
+\end{equation}
+where $z_i$ is the logit vector at exit $i$.
+
+The confidence score is:
+\begin{equation}
+    c_i = \max_j p_i(j).
+\end{equation}
+
+TODO(section-writing-agent): Explain the joint weighted loss across exits:
+\begin{equation}
+    \mathcal{L}
+    =
+    \sum_{i=1}^{K} \alpha_i \mathcal{L}_i,
+\end{equation}
+where $K$ is the number of exits and $\alpha_i$ controls the importance of each exit loss.
+
+\subsection{Fixed Confidence Thresholding}
+
+TODO(section-writing-agent): Explain the fixed-threshold exit rule. Exit at the first intermediate classifier whose confidence exceeds threshold $\tau$:
+\begin{equation}
+    \text{exit at } i
+    \quad \text{if} \quad
+    c_i \geq \tau.
+\end{equation}
+
+TODO(section-writing-agent): Mention the evaluated threshold values only if verified in experimental_log.md.
+
+\subsection{Budget-Aware Dynamic Thresholding}
+
+TODO(section-writing-agent): Explain the dynamic threshold policy. Define the normalized FLOPs consumed up to exit $i$:
+\begin{equation}
+    r_i =
+    \frac{\operatorname{FLOPs}_i}
+    {\operatorname{FLOPs}_{\text{full}}}.
+\end{equation}
+
+TODO(section-writing-agent): Describe the accuracy-first and budget-first variants if they were implemented and evaluated. Use verified equations from idea.md or experimental_log.md.
+
+\subsection{Supervised Exit Controller}
+
+TODO(section-writing-agent): Explain the learned controller. At each exit, the controller observes a state vector:
+\begin{equation}
+    s_i = [c_i, H_i, m_i, d_i, r_i],
+\end{equation}
+where $c_i$ is confidence, $H_i$ is entropy, $m_i$ is top-1/top-2 margin, $d_i$ is normalized exit depth, and $r_i$ is normalized FLOPs.
+
+The predictive entropy is:
+\begin{equation}
+    H_i = -\sum_j p_i(j)\log p_i(j).
+\end{equation}
+
+The margin is:
+\begin{equation}
+    m_i = p_i(\text{top-1}) - p_i(\text{top-2}).
+\end{equation}
+
+TODO(section-writing-agent): Explain whether the controller was trained using earliest-correct-exit labels, reward labels, or another verified supervision signal.
+
+\subsection{REINFORCE Exit Controller}
+
+TODO(section-writing-agent): Explain the policy-gradient controller if included in the final experiments. The controller policy is:
+\begin{equation}
+    \pi_\theta(a_i \mid s_i),
+\end{equation}
+where $a_i \in \{\text{exit}, \text{continue}\}$.
+
+Use the reward:
+\begin{equation}
+    R =
+    \mathbb{1}[\hat{y}=y]
+    -
+    \lambda
+    \frac{\operatorname{FLOPs}_i}
+    {\operatorname{FLOPs}_{\text{full}}}.
+\end{equation}
+
+TODO(section-writing-agent): Explain that the early-exit backbone is frozen during REINFORCE training if this is verified by the implementation.
+
+% ------------------------------------------------------------------
+\section{Experimental Setup}
+% ------------------------------------------------------------------
+
+TODO(section-writing-agent): Describe the dataset, training setup, evaluation protocol, and metrics. Use only information from idea.md, experimental_log.md, configs, and run manifests.
+
+\subsection{Dataset}
+
+TODO(section-writing-agent): Describe \dataset{} as the image classification benchmark used in the project. Mention train/test split only if verified.
+
+\subsection{Compared Methods}
+
+TODO(section-writing-agent): List the compared methods:
+\begin{itemize}
+    \item Full \backbone{} baseline;
+    \item Early-exit \backbone{};
+    \item fixed-threshold policy;
+    \item dynamic-threshold policy;
+    \item supervised learned controller;
+    \item REINFORCE controller, if evaluated.
+\end{itemize}
+
+\subsection{Evaluation Metrics}
+
+TODO(section-writing-agent): Define the metrics used in the report: accuracy, FLOPs/sample, FLOPs reduction, latency/sample, estimated CO$_2$ emissions, exit distribution, average exit, and reward if applicable.
+
+FLOPs reduction is computed as:
+\begin{equation}
+    \operatorname{Reduction}
+    =
+    1 -
+    \frac{\operatorname{FLOPs}_{\text{method}}}
+    {\operatorname{FLOPs}_{\text{full}}}.
+\end{equation}
+
+\subsection{Statistical Analysis}
+
+TODO(section-writing-agent): State whether multiple runs, repeated seeds, or robustness analysis were performed. If not, justify the limitation according to conference_guidelines.md. Do not claim statistical significance unless supported by the metrics.
+
+% ------------------------------------------------------------------
+\section{Results}
+% ------------------------------------------------------------------
+
+TODO(section-writing-agent): Insert the main comparison table using the source-of-truth metrics from experimental_log.md. Do not invent numbers.
+
+\begin{table*}[t]
+\centering
+\caption{Main comparison of full and adaptive inference methods. TODO(section-writing-agent): Fill values from the source-of-truth metrics file only.}
+\label{tab:main-results}
+\begin{tabular}{lrrrrrl}
+\toprule
+Method & Accuracy & FLOPs/sample & FLOPs Red. & Latency/sample & CO$_2$ & Avg. Exit \\
+\midrule
+Full \backbone{} & TODO & TODO & 0\% & TODO & TODO & Final \\
+Early-Exit \backbone{} & TODO & TODO & TODO & TODO & TODO & TODO \\
+Fixed Threshold & TODO & TODO & TODO & TODO & TODO & TODO \\
+Dynamic Threshold & TODO & TODO & TODO & TODO & TODO & TODO \\
+Supervised Controller & TODO & TODO & TODO & TODO & TODO & TODO \\
+REINFORCE Controller & TODO & TODO & TODO & TODO & TODO & TODO \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+TODO(plotting-agent): Insert or reference the final accuracy comparison figure if available.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\linewidth]{figures/accuracy_comparison.png}
+    \caption{TODO(plotting-agent): Caption based on source metrics. Do not claim improvement unless supported.}
+    \label{fig:accuracy-comparison}
+\end{figure}
+
+TODO(plotting-agent): Insert or reference the final accuracy versus FLOPs figure if available.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\linewidth]{figures/accuracy_vs_flops.png}
+    \caption{TODO(plotting-agent): Caption describing the accuracy--FLOPs tradeoff using verified data.}
+    \label{fig:accuracy-flops}
+\end{figure}
+
+TODO(plotting-agent): Insert or reference the final accuracy versus latency figure if available.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\linewidth]{figures/accuracy_vs_latency.png}
+    \caption{TODO(plotting-agent): Caption describing the accuracy--latency tradeoff using verified data.}
+    \label{fig:accuracy-latency}
+\end{figure}
+
+TODO(plotting-agent): Insert or reference the CO2 or energy-efficiency figure if available.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\linewidth]{figures/co2_reduction.png}
+    \caption{TODO(plotting-agent): Caption describing estimated CO$_2$ or energy-efficiency results. State if values are estimates.}
+    \label{fig:co2-reduction}
+\end{figure}
+
+\subsection{Ablation Analysis}
+
+TODO(section-writing-agent): Discuss threshold ablations, dynamic threshold ablations, controller lambda sweep, or REINFORCE reward sweep if supported by the metrics.
+
+\begin{table}[t]
+\centering
+\caption{TODO(section-writing-agent): Ablation study summary. Fill only with verified values.}
+\label{tab:ablation}
+\begin{tabular}{lrrr}
+\toprule
+Setting & Accuracy & FLOPs Red. & Notes \\
+\midrule
+TODO & TODO & TODO & TODO \\
+TODO & TODO & TODO & TODO \\
+TODO & TODO & TODO & TODO \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ------------------------------------------------------------------
+\section{Discussion}
+% ------------------------------------------------------------------
+
+TODO(section-writing-agent): Interpret the results. Discuss the accuracy-efficiency tradeoff, why the best fixed-threshold policy may work well, why the supervised controller may exit too aggressively, and why REINFORCE improves over the supervised controller if supported by the results.
+
+TODO(section-writing-agent): Clearly separate verified conclusions from hypotheses. Do not overclaim beyond CIFAR-10 or beyond the measured hardware/metrics.
+
+% ------------------------------------------------------------------
+\section{Limitations}
+% ------------------------------------------------------------------
+
+TODO(section-writing-agent): Discuss limitations:
+\begin{itemize}
+    \item evaluation limited to \dataset{};
+    \item latency and emissions may depend on hardware and measurement setup;
+    \item estimated CO$_2$ values should be interpreted cautiously unless directly measured;
+    \item repeated-seed or variance analysis may be limited;
+    \item adaptive inference adds policy/controller complexity.
+\end{itemize}
+
+% ------------------------------------------------------------------
+\section{Conclusion}
+% ------------------------------------------------------------------
+
+TODO(section-writing-agent): Summarize the project, the early-exit approach, the compared policies, the main empirical findings, and future work. Mention that negative or mixed results are still valuable if they reveal the tradeoffs between accuracy and efficiency.
+
+% ------------------------------------------------------------------
+\section*{Acknowledgements}
+% ------------------------------------------------------------------
+
+TODO(section-writing-agent): Acknowledge any allowed help, debugging support, tools, or state that no external help was received. Mention AI assistance only according to the project statement and AI usage policy.
+
+% ------------------------------------------------------------------
+% References
+% ------------------------------------------------------------------
+
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\end{document}
+```
