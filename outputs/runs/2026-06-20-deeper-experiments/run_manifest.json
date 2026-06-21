@@ -1,0 +1,8 @@
+{
+  "checkpoint_dir": "outputs/runs/2026-06-20-direct-latency/checkpoints",
+  "created_at": "2026-06-20T01:45:38.495860+00:00",
+  "metrics_dir": "outputs/runs/2026-06-20-direct-latency/metrics",
+  "plots_dir": "outputs/runs/2026-06-20-direct-latency/plots",
+  "reference_metrics_dir": "outputs/metrics",
+  "run_name": "2026-06-20-direct-latency"
+}

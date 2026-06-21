@@ -5,330 +5,368 @@
 **Student:** Tran Anh Chuong  
 **University:** VinUniversity  
 **Course:** COMP2050 - AI Programming Project  
-**Target Deadline:** July 12, 2026  
+**Target Deadline:** July 22, 2026
 
 ---
 
-## 1. Project Overview
+## 1. Project Summary
 
-Modern Convolutional Neural Networks (CNNs) usually perform the same full forward pass for every input, even though some images are much easier to classify than others. This wastes computation, increases inference latency, and contributes to unnecessary energy usage.
+This project studies input-dependent early exiting for CIFAR-10 classification with a ResNet-18 backbone. Instead of forcing every image through the full network, the model can stop at intermediate exits when a policy decides the prediction is already reliable enough.
 
-This project explores a **Green AI** approach using **budget-aware dynamic early exiting**. Instead of forcing every CIFAR-10 image to pass through the full ResNet-18 model, the network is modified with intermediate classifiers, called **early exits**, placed after selected ResNet stages. If an intermediate classifier is sufficiently reliable, the model stops early and returns the prediction. If not, the image continues to deeper layers.
+The implemented comparison now includes:
 
-The central idea is:
+- a full ResNet-18 baseline
+- a jointly trained early-exit ResNet-18
+- fixed-threshold early-exit policies
+- dynamic-threshold early-exit policies
+- a supervised learned exit controller
+- a REINFORCE-based exit controller
 
-> The model should spend more computation only when the input is difficult enough to justify it.
+The main goal is to compare the tradeoff between:
 
-This project is therefore not standard static pruning. It does not permanently remove weights or filters from the model. Instead, it performs **input-dependent inference**, where each image may use a different amount of computation.
-
----
-
-## 2. Research Question
-
-The main research question is:
-
-> **Can a CNN learn when to stop computation in order to reduce FLOPs, latency, and carbon emissions while maintaining acceptable classification accuracy?**
-
-To answer this, the project compares three exit-decision strategies:
-
-1. **Fixed confidence thresholding**  
-   Exit when the current classifier's confidence is above a fixed threshold.
-
-2. **Budget-aware dynamic thresholding**  
-   Adjust the exit threshold based on how much computation has already been used.
-
-3. **Learned exit controller**  
-   Train a small controller to decide whether to exit or continue using confidence, entropy, margin, exit index, and FLOPs-used features.
+- accuracy
+- average FLOPs
+- latency
+- approximate emissions reporting
 
 ---
 
-## 3. Base Algorithm and Environment
+## 2. Current Status
 
-- **Backbone model:** ResNet-18
-- **Task:** Image classification
-- **Dataset:** CIFAR-10
-- **Framework:** PyTorch
-- **Efficiency tracking:** FLOPs (Floating Point Operations), latency, and CodeCarbon emissions
-- **Main comparison:** Full ResNet-18 vs early-exit ResNet-18 variants
+The repository is no longer just a project plan. The following are already implemented and runnable:
+
+- CIFAR-10 data pipeline
+- full ResNet-18 training and evaluation
+- early-exit ResNet-18 with 3 intermediate exits plus the final exit
+- joint-loss training for the early-exit backbone
+- fixed-threshold and dynamic-threshold sweeps
+- supervised controller training
+- REINFORCE controller training
+- plot generation from comparison metrics
+- versioned rerun outputs under `outputs/runs/<run_name>/`
+
+Current working tracker:
+
+- [PROGRESS.md](/home/24chuong.ta/chun/AI-Final-Project/PROGRESS.md)
+
+REINFORCE-specific implementation notes:
+
+- [REINFORCE_PHASE_PLAN.md](/home/24chuong.ta/chun/AI-Final-Project/REINFORCE_PHASE_PLAN.md)
 
 ---
 
-## 4. Proposed Model: Early-Exit ResNet-18
+## 3. Model and Methods
 
-The modified architecture adds auxiliary classifiers after intermediate ResNet stages:
+### Backbone
+
+- Dataset: CIFAR-10
+- Base model: ResNet-18
+- Framework: PyTorch
+
+### Early-exit architecture
+
+The early-exit model adds auxiliary classifiers after:
+
+- Layer 1
+- Layer 2
+- Layer 3
+- Layer 4 / final classifier
+
+This gives 4 total exits:
+
+- `exit_1`
+- `exit_2`
+- `exit_3`
+- `final_exit`
+
+### Implemented decision strategies
+
+1. `Fixed threshold`
+   Exit when max softmax confidence exceeds a constant threshold.
+
+2. `Dynamic threshold`
+   Use either `accuracy_first` or `budget_first` threshold schedules based on cumulative compute.
+
+3. `Supervised controller`
+   Train a small MLP controller using state features:
+   confidence, normalized entropy, top-1/top-2 margin, normalized exit depth, and FLOPs ratio.
+
+4. `REINFORCE controller`
+   Fine-tune the controller with policy gradient, using a reward that balances correctness and compute cost.
+
+---
+
+## 4. Metrics and Important Caveats
+
+The repo currently reports:
+
+- accuracy
+- FLOPs per sample
+- FLOPs reduction
+- latency
+- latency reduction
+- CO2 / emissions
+- average exit
+- exit distribution
+
+### What is measured directly
+
+`Accuracy`
+- Measured directly from evaluation on the test set.
+
+`FLOPs`
+- Baseline and early-exit backbone FLOPs are profiled directly.
+- Policy-method FLOPs are derived from average exit usage and the model's stored exit FLOPs ratios.
+
+`Latency`
+- Baseline and early-exit backbone latency are measured directly.
+- In the `outputs/runs/2026-06-19-direct-latency/` rerun, threshold, controller, and REINFORCE latency are also measured directly using true conditional execution.
+
+### What is not measured directly
+
+`CO2 / emissions`
+- Direct CodeCarbon measurement is currently used only for the two training backbones:
+  - full ResNet-18 training
+  - early-exit ResNet-18 training
+- Threshold, dynamic-threshold, supervised-controller, and REINFORCE-controller CO2 values are **not** direct CodeCarbon measurements.
+- Those policy CO2 values are estimated by scaling the baseline reference with the method's average FLOPs ratio.
+
+The current policy-side formula is:
 
 ```text
-Input image
-→ ResNet stem
-→ Layer 1 → Exit 1
-→ Layer 2 → Exit 2
-→ Layer 3 → Exit 3
-→ Layer 4 → Final exit
+estimated_co2_kg = baseline_co2_kg * average_flops_ratio
 ```
 
-Each exit produces a class prediction and a confidence score. For exit `i`, the output probability is:
+### Important interpretation note
 
-```math
-p_i = softmax(z_i)
-```
+The current CO2 numbers are useful as rough efficiency proxies, but they are **not a clean apples-to-apples inference-emissions benchmark** across all methods.
 
-The confidence score is:
+Why:
 
-```math
-c_i = \max_j p_i(j)
-```
+- the baseline and early-exit `co2_kg` values come from CodeCarbon-wrapped training runs
+- the policy methods use baseline-scaled estimates instead of direct emissions measurement
 
-The goal is not to exit at the shallowest layer for every image. The goal is to find the **earliest reliable exit** for each input.
+So the safest interpretation today is:
+
+- use `accuracy`, `FLOPs`, and `latency` as the primary comparison metrics
+- treat `co2_kg` for non-training policies as an approximate proxy only
+
+If direct inference-emissions comparison is needed later, the policy evaluation scripts will need their own dedicated CodeCarbon benchmarking pass.
 
 ---
 
-## 5. Training Objective
+## 5. Current Results Snapshot
 
-All exits are trained jointly using weighted cross-entropy loss:
+The latest direct-latency rerun is stored under:
 
-```math
-L = \alpha_1 L_1 + \alpha_2 L_2 + \alpha_3 L_3 + \alpha_4 L_4
-```
+- [outputs/runs/2026-06-19-direct-latency/](/home/24chuong.ta/chun/AI-Final-Project/outputs/runs/2026-06-19-direct-latency)
 
-A planned initial weighting scheme is:
+The current comparison table is:
 
-```math
-\alpha_1 = 0.3, \quad \alpha_2 = 0.5, \quad \alpha_3 = 0.7, \quad \alpha_4 = 1.0
-```
+| Method | Accuracy | FLOPs/sample | FLOPs Reduction | Latency/sample | Avg Exit | Notes |
+| :--- | ---: | ---: | ---: | ---: | ---: | :--- |
+| Full ResNet-18 | 88.26% | 557.89M | 0.00% | 2.182 ms | Final | Baseline reference |
+| Early-Exit ResNet-18 | 87.74% | 558.01M | 0.00% | 2.606 ms | N/A | Joint-loss backbone only |
+| Fixed threshold (`tau = 0.95`) | 87.53% | 319.51M | 42.73% | 0.075 ms | 2.51 | Best fixed-threshold result |
+| Dynamic threshold (`accuracy_first`, `alpha = 0.30`) | 87.41% | 359.92M | 35.48% | 0.078 ms | 2.72 | Best dynamic-threshold result |
+| Supervised controller | 73.64% | 152.01M | 72.75% | 0.077 ms | 1.24 | Very aggressive early exiting |
+| REINFORCE controller (`lambda_cost = 0.20`) | 86.91% | 240.84M | 56.83% | 0.085 ms | 2.00 | Stronger tradeoff than supervised controller |
 
-The final classifier receives the largest weight to preserve the full model's accuracy while still allowing earlier exits to learn useful predictions.
+Primary artifacts:
+
+- [comparison.csv](/home/24chuong.ta/chun/AI-Final-Project/outputs/runs/2026-06-19-direct-latency/metrics/comparison.csv)
+- [fixed_threshold_results.json](/home/24chuong.ta/chun/AI-Final-Project/outputs/runs/2026-06-19-direct-latency/metrics/fixed_threshold_results.json)
+- [dynamic_threshold_results.json](/home/24chuong.ta/chun/AI-Final-Project/outputs/runs/2026-06-19-direct-latency/metrics/dynamic_threshold_results.json)
+
+Note: the `co2_kg` column still exists in the metrics files, but for threshold/controller/REINFORCE methods it remains baseline-scaled rather than directly measured.
 
 ---
 
-## 6. Exit-Decision Strategies
-
-### 6.1 Strategy 1: Fixed Confidence Thresholding
-
-The simplest strategy exits when the maximum softmax confidence exceeds a fixed threshold:
-
-```math
-\text{exit at } i \text{ if } c_i \geq \tau
-```
-
-Planned threshold sweep:
+## 6. Repository Layout
 
 ```text
-τ = 0.60, 0.70, 0.80, 0.90, 0.95
-```
-
-Expected behavior:
-
-- Lower threshold → more early exits, lower FLOPs, possible accuracy drop.
-- Higher threshold → fewer early exits, higher accuracy, less compute saving.
-
-### 6.2 Strategy 2: Budget-Aware Dynamic Thresholding
-
-Instead of using one fixed threshold, the threshold changes based on the computation already used.
-
-Let:
-
-```math
-r_i = \frac{\text{FLOPs used up to exit } i}{\text{FLOPs of full ResNet-18}}
-```
-
-Two variants will be tested.
-
-**Accuracy-first thresholding:**
-
-```math
-\tau_i = \tau_0 + \alpha r_i
-```
-
-This becomes stricter as more computation is used.
-
-**Budget-first thresholding:**
-
-```math
-\tau_i = \tau_0 - \alpha r_i
-```
-
-This becomes more willing to exit as the model approaches the full computation budget. This variant is especially aligned with the Green AI goal.
-
-### 6.3 Strategy 3: Learned Exit Controller
-
-The learned controller treats early exiting as a small decision-making problem. At each exit, it decides:
-
-```math
-a_i \in \{\text{exit}, \text{continue}\}
-```
-
-The controller receives the feature vector:
-
-```math
-s_i = [c_i, H_i, m_i, i, r_i]
-```
-
-where:
-
-- `c_i`: maximum softmax confidence
-- `H_i`: entropy of the prediction
-- `m_i`: margin between top-1 and top-2 probabilities
-- `i`: current exit index
-- `r_i`: fraction of FLOPs already used
-
-Entropy is:
-
-```math
-H_i = -\sum_j p_i(j) \log p_i(j)
-```
-
-Margin is:
-
-```math
-m_i = p_i(\text{top-1}) - p_i(\text{top-2})
-```
-
-The reward idea is:
-
-```math
-R = \mathbb{1}[\hat{y}=y] - \lambda \cdot \frac{\text{FLOPs}_i}{\text{FLOPs}_{full}}
-```
-
-This rewards correct predictions while penalizing expensive computation. In practice, the first implementation may train the controller using the **earliest correct exit** as a supervised target, then compare it with the reward-based version if time allows.
-
----
-
-## 7. Evaluation Plan
-
-The project will compare the full ResNet-18 baseline against the three early-exit strategies.
-
-### 7.1 Main Metrics
-
-- **Test accuracy (%):** Measures classification performance.
-- **Average FLOPs/sample:** Measures computational cost.
-- **FLOPs reduction (%):** Measures computation saved compared with full ResNet-18.
-- **Inference latency (ms):** Measures real runtime speedup.
-- **Carbon emissions (gCO₂eq):** Estimated using the `codecarbon` Python library.
-- **Exit distribution:** Shows the percentage of samples exiting at Exit 1, Exit 2, Exit 3, and the final exit.
-
-FLOPs reduction is computed as:
-
-```math
-\text{FLOPs Reduction} = 1 - \frac{\text{Average FLOPs}_{method}}{\text{FLOPs}_{full}}
-```
-
-### 7.2 Planned Result Tables
-
-**Baseline table:**
-
-| Model | Accuracy | FLOPs/sample | Latency/sample | CO₂ Emissions |
-| :--- | ---: | ---: | ---: | ---: |
-| Full ResNet-18 | TBD | TBD | TBD | TBD |
-
-**Final comparison table:**
-
-| Method | Accuracy | FLOPs Reduction | Latency Reduction | CO₂ Reduction | Avg Exit |
-| :--- | ---: | ---: | ---: | ---: | ---: |
-| Full ResNet-18 | TBD | 0% | 0% | 0% | Final |
-| Fixed threshold | TBD | TBD | TBD | TBD | TBD |
-| Dynamic threshold | TBD | TBD | TBD | TBD | TBD |
-| Learned exit controller | TBD | TBD | TBD | TBD | TBD |
-
-### 7.3 Planned Visualizations
-
-- Accuracy vs FLOPs reduction curve
-- Accuracy vs latency reduction curve
-- Exit distribution bar chart
-- Carbon emissions comparison
-- Accuracy-efficiency frontier across all strategies
-
----
-
-## 8. Implementation Plan
-
-The project will be built in stages. The first priority is to make the baseline work before implementing advanced exit strategies.
-
-### Phase 1: Baseline ResNet-18
-
-- Train a standard ResNet-18 on CIFAR-10.
-- Build evaluation scripts for accuracy, FLOPs, latency, and CodeCarbon.
-- Save baseline checkpoints and result tables.
-
-### Phase 2: Early-Exit ResNet-18
-
-- Add auxiliary classifiers after ResNet Layer 1, Layer 2, and Layer 3.
-- Train all exits jointly with weighted cross-entropy.
-- Verify that each exit produces valid predictions.
-
-### Phase 3: Fixed Threshold Experiments
-
-- Sweep fixed thresholds: `0.60`, `0.70`, `0.80`, `0.90`, `0.95`.
-- Record accuracy, FLOPs, latency, carbon emissions, and exit distribution.
-- Generate the first accuracy-efficiency curve.
-
-### Phase 4: Budget-Aware Dynamic Thresholding
-
-- Implement accuracy-first and budget-first dynamic threshold rules.
-- Compare against the best fixed-threshold baseline.
-- Analyze whether dynamic thresholds improve the trade-off curve.
-
-### Phase 5: Learned Exit Controller
-
-- Extract controller features: confidence, entropy, margin, exit index, and FLOPs used.
-- Train a small MLP controller.
-- Compare supervised earliest-correct-exit training vs reward-based training if time allows.
-
-### Phase 6: Report and Final Submission
-
-- Write the report in research-paper format.
-- Include numbered figures and tables.
-- Prepare `code.zip` and `statement.pdf` for submission.
-
----
-
-## 9. Suggested Repository Structure
-
-```text
-green-ai-early-exit/
+AI-Final-Project/
+├── checkpoints/
 ├── configs/
-│   ├── baseline_resnet18.yaml
-│   └── early_exit_resnet18.yaml
-├── models/
-│   ├── resnet_cifar.py
-│   ├── early_exit_resnet.py
-│   └── exit_controller.py
-├── utils/
-│   ├── metrics.py
-│   ├── flops.py
-│   ├── latency.py
-│   └── carbon.py
-├── train_baseline.py
-├── train_early_exit.py
-├── train_controller.py
-├── evaluate.py
-├── measure_efficiency.py
-├── results/
-│   ├── tables/
-│   └── figures/
-├── report/
-│   └── main.tex
-└── README.md
+├── data/
+├── outputs/
+│   ├── metrics/
+│   ├── plots/
+│   └── runs/
+├── scripts/
+├── src/ai_final_project/
+├── tests/
+├── PROGRESS.md
+├── README.md
+└── REINFORCE_PHASE_PLAN.md
+```
+
+Important subdirectories:
+
+- `src/ai_final_project/`
+  Core model, training, evaluation, profiling, controller, and results utilities.
+- `scripts/`
+  Runnable experiment entrypoints.
+- `configs/`
+  JSON configs for baseline, early-exit, threshold, controller, and REINFORCE runs.
+- `outputs/metrics/`
+  Legacy metrics snapshot.
+- `outputs/runs/<run_name>/`
+  Versioned rerun artifacts so new experiments do not overwrite previous results.
+
+---
+
+## 7. Main Scripts
+
+Training and evaluation entrypoints:
+
+- `scripts/train_baseline.py`
+- `scripts/train_early_exit.py`
+- `scripts/run_threshold_sweep.py`
+- `scripts/run_dynamic_threshold.py`
+- `scripts/train_controller.py`
+- `scripts/train_reinforce_controller.py`
+- `scripts/make_report_assets.py`
+
+Deeper ablation and analysis entrypoints:
+
+- `scripts/run_threshold_ablation.py`
+- `scripts/run_controller_lambda_sweep.py`
+- `scripts/run_reinforce_sweep.py`
+- `scripts/analyze_statistical_robustness.py`
+- `scripts/make_ablation_assets.py`
+
+Shell wrappers already present in the repo:
+
+- `run_baseline.sh`
+- `run_early_exit.sh`
+- `run_fix_threshold.sh`
+- `run_dynamic_threshold.sh`
+- `run_train_controller.sh`
+- `run_train_reinforce.sh`
+
+---
+
+## 8. Recommended Run Order
+
+For a fresh full pipeline:
+
+1. Train the full baseline
+2. Train the early-exit backbone
+3. Run the fixed-threshold sweep
+4. Run the dynamic-threshold sweep
+5. Train the supervised controller
+6. Train the REINFORCE controller
+7. Generate plots
+
+Example Python commands:
+
+```bash
+python scripts/train_baseline.py --config configs/baseline.json
+python scripts/train_early_exit.py --config configs/early_exit.json
+python scripts/run_threshold_sweep.py --config configs/fixed_threshold.json
+python scripts/run_dynamic_threshold.py --config configs/dynamic_threshold.json
+python scripts/train_controller.py --config configs/controller.json
+python scripts/train_reinforce_controller.py --config configs/reinforce_controller.json
+python scripts/make_report_assets.py --config configs/baseline.json
+```
+
+For a versioned rerun with isolated outputs:
+
+```bash
+python scripts/run_threshold_sweep.py --config configs/fixed_threshold.json --run-name 2026-06-19-direct-latency
+python scripts/run_dynamic_threshold.py --config configs/dynamic_threshold.json --run-name 2026-06-19-direct-latency
+python scripts/train_controller.py --config configs/controller.json --run-name 2026-06-19-direct-latency
+python scripts/train_reinforce_controller.py --config configs/reinforce_controller.json --run-name 2026-06-19-direct-latency
+python scripts/make_report_assets.py --config configs/baseline.json --run-name 2026-06-19-direct-latency
+```
+
+Important rerun note:
+
+- When `--run-name` is used, controller checkpoints are written into that run's own `checkpoints/` folder.
+- The REINFORCE run expects the supervised controller warm-start checkpoint inside the same run folder, so the supervised controller should be run before REINFORCE in that versioned run.
+
+---
+
+## 9. Outputs and Artifacts
+
+### Legacy outputs
+
+- `outputs/metrics/`
+- `outputs/plots/`
+
+These contain the original saved metrics and report figures.
+
+### Versioned rerun outputs
+
+Each rerun can now be stored under:
+
+```text
+outputs/runs/<run_name>/
+  checkpoints/
+  metrics/
+  plots/
+  run_manifest.json
+```
+
+Run bootstrapping behavior:
+
+- a fresh run copies `baseline_metrics.json` and `early_exit_metrics.json` from the reference metrics directory
+- a fresh run seeds `comparison.csv` with only:
+  - `full_resnet18`
+  - `early_exit_resnet18`
+- threshold/controller/REINFORCE rows are then added only for that run
+
+This makes it easy to compare old and new experiment passes without overwriting previous metrics.
+
+---
+
+## 10. Tests
+
+The repo currently includes tests for:
+
+- model output shapes and staged early-exit routing
+- threshold policy logic
+- REINFORCE helper functions
+- versioned output path resolution and run bootstrapping
+
+Run tests with:
+
+```bash
+python -m unittest discover -s tests
 ```
 
 ---
 
-## 10. Immediate Next Step
+## 11. What To Use For Analysis
 
-The immediate next step is:
+For the current repo state, the most reliable interpretation is:
 
-> **Train and evaluate the full ResNet-18 baseline on CIFAR-10.**
+- `Accuracy`: direct and trustworthy
+- `FLOPs`: strong comparison metric
+- `Latency`: direct for the latest rerun under `outputs/runs/2026-06-19-direct-latency/`
+- `CO2`: direct only for the two backbone training runs; estimated for the policy methods
 
-Before implementing early exits, the baseline pipeline must produce:
+So if you are writing the final report now:
 
-- test accuracy,
-- FLOPs/sample,
-- inference latency,
-- CodeCarbon emissions.
-
-This baseline becomes the reference point for proving whether early exiting actually saves computation and energy.
+- lead with accuracy, FLOPs, and latency
+- clearly label policy CO2 as estimated
+- avoid claiming that threshold/controller/REINFORCE emissions were directly measured with CodeCarbon
 
 ---
 
-## 11. Summary
+## 12. Next Work
 
-This project reframes Green AI as a decision-making problem: instead of always using the full CNN, the model should learn when computation is no longer necessary. By comparing fixed confidence thresholding, budget-aware dynamic thresholding, and a learned exit controller, the project aims to show how early-exit inference can reduce FLOPs, latency, and carbon emissions while preserving most of the accuracy of a full ResNet-18 model.
+The remaining high-level work is:
+
+- run the deeper CIFAR-10 ablation suite:
+  - dense fixed/dynamic threshold sweeps
+  - learned-controller `best_reward` lambda sweep
+  - REINFORCE lambda sweep
+  - bootstrap confidence intervals and richer classification metrics
+- finalize the report and package
+- write up the tradeoff discussion, especially:
+  - fixed threshold vs dynamic threshold
+  - supervised controller vs REINFORCE controller
+  - direct latency gains vs still-estimated emissions
+- optionally add a dedicated inference-time CodeCarbon benchmark in a future upgrade if direct emissions comparison is required

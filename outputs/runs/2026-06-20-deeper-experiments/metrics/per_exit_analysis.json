@@ -1,0 +1,140 @@
+{
+  "accuracy_first_base_0.90_alpha_0.50": {
+    "exit_1": {
+      "accuracy": 0.0,
+      "average_confidence": 0.0,
+      "count": 0,
+      "fraction": 0.0
+    },
+    "exit_2": {
+      "accuracy": 0.0,
+      "average_confidence": 0.0,
+      "count": 0,
+      "fraction": 0.0
+    },
+    "exit_3": {
+      "accuracy": 0.0,
+      "average_confidence": 0.0,
+      "count": 0,
+      "fraction": 0.0
+    },
+    "final_exit": {
+      "accuracy": 0.8774,
+      "average_confidence": 0.928520960149169,
+      "count": 10000,
+      "fraction": 1.0
+    }
+  },
+  "early_exit_final": {
+    "exit_1": {
+      "accuracy": 0.0,
+      "average_confidence": 0.0,
+      "count": 0,
+      "fraction": 0.0
+    },
+    "exit_2": {
+      "accuracy": 0.0,
+      "average_confidence": 0.0,
+      "count": 0,
+      "fraction": 0.0
+    },
+    "exit_3": {
+      "accuracy": 0.0,
+      "average_confidence": 0.0,
+      "count": 0,
+      "fraction": 0.0
+    },
+    "final_exit": {
+      "accuracy": 0.8774,
+      "average_confidence": 0.928520960149169,
+      "count": 10000,
+      "fraction": 1.0
+    }
+  },
+  "fixed_threshold_0.99": {
+    "exit_1": {
+      "accuracy": 0.983957219251337,
+      "average_confidence": 0.9942041307209647,
+      "count": 187,
+      "fraction": 0.0187
+    },
+    "exit_2": {
+      "accuracy": 0.9870542811719283,
+      "average_confidence": 0.9980233307727326,
+      "count": 4403,
+      "fraction": 0.4403
+    },
+    "exit_3": {
+      "accuracy": 0.9698464912280702,
+      "average_confidence": 0.9970922591654878,
+      "count": 1824,
+      "fraction": 0.1824
+    },
+    "final_exit": {
+      "accuracy": 0.6899051868377022,
+      "average_confidence": 0.8057105881554151,
+      "count": 3586,
+      "fraction": 0.3586
+    }
+  },
+  "full_resnet18": {
+    "final": {
+      "accuracy": 0.8826,
+      "average_confidence": 0.9229815893143416,
+      "count": 10000,
+      "fraction": 1.0
+    }
+  },
+  "learned_controller_best_reward_lambda_0.30": {
+    "exit_1": {
+      "accuracy": 0.7187462180806002,
+      "average_confidence": 0.7297120212888251,
+      "count": 8263,
+      "fraction": 0.8263
+    },
+    "exit_2": {
+      "accuracy": 0.7658037326911499,
+      "average_confidence": 0.8193792622179815,
+      "count": 1661,
+      "fraction": 0.1661
+    },
+    "exit_3": {
+      "accuracy": 0.5394736842105263,
+      "average_confidence": 0.6600197757545271,
+      "count": 76,
+      "fraction": 0.0076
+    },
+    "final_exit": {
+      "accuracy": 0.0,
+      "average_confidence": 0.0,
+      "count": 0,
+      "fraction": 0.0
+    }
+  },
+  "reinforce_controller_lambda_0.05": {
+    "exit_1": {
+      "accuracy": 0.0,
+      "average_confidence": 0.0,
+      "count": 0,
+      "fraction": 0.0
+    },
+    "exit_2": {
+      "accuracy": 0.9601044537937038,
+      "average_confidence": 0.9851582732235903,
+      "count": 6893,
+      "fraction": 0.6893
+    },
+    "exit_3": {
+      "accuracy": 0.7097422162705055,
+      "average_confidence": 0.8143508902831663,
+      "count": 2987,
+      "fraction": 0.2987
+    },
+    "final_exit": {
+      "accuracy": 0.25833333333333336,
+      "average_confidence": 0.42795581420262657,
+      "count": 120,
+      "fraction": 0.012
+    }
+  }
+}

@@ -1,0 +1,1 @@
+CUDA_VISIBLE_DEVICES=1 python3 scripts/run_controller_lambda_sweep.py --run-name 2026-06-20-deeper-experiments

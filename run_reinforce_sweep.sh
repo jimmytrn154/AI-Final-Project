@@ -1,0 +1,1 @@
+CUDA_VISIBLE_DEVICES=3 python3 scripts/run_reinforce_sweep.py --run-name 2026-06-20-deeper-experiments

@@ -2,7 +2,7 @@
 
 **Project:** Learning When to Stop: Budget-Aware Early Exiting for Energy-Efficient CNN Inference  
 **Target Deadline:** July 12, 2026  
-**Last Updated:** June 18, 2026
+**Last Updated:** June 19, 2026
 
 ## Overall Status Summary
 - Current stage: REINFORCE experiment completed; report packaging and final write-up are next.
@@ -46,6 +46,7 @@
 - 2026-06-14: Generated report plots in `outputs/plots/` using `scripts/make_report_assets.py`.
 - 2026-06-18: Completed the REINFORCE controller experiment and saved `outputs/metrics/reinforce_controller_results.json`.
 - 2026-06-18: Recorded REINFORCE controller metrics in `outputs/metrics/comparison.csv`.
+- 2026-06-19: Added deeper experiment tooling for dense threshold ablations, learned-controller `best_reward` lambda sweeps, REINFORCE lambda sweeps, bootstrap statistics, richer classification metrics, per-exit analysis, and ablation plots.
 
 ## Pending Tasks
 - Update milestone checkboxes after each completed phase.
@@ -68,8 +69,12 @@
 - Threshold and controller latency/emissions are baseline-scaled estimates rather than direct measurements.
 
 ## Plan for further experiment setups
-- Show the tau ablation study, reward function for RL training (i.e., lambda choice), show accuracy for val/test across baselines, try cifar-100 also.
-- Compute stats value, average accuracy, variance of accuracy, remsemble/randomly sample the dataset, etc.
+- Run dense fixed-threshold and dynamic-threshold ablations with validation/test metrics using `scripts/run_threshold_ablation.py`.
+- Run learned-controller `best_reward` reward-label sweeps over `reward_lambda` using `scripts/run_controller_lambda_sweep.py`; keep `earliest_correct` as the reference supervised controller.
+- Run REINFORCE reward sweeps over `lambda_cost` using `scripts/run_reinforce_sweep.py`.
+- Compute bootstrap confidence intervals, macro-F1, weighted-F1, precision, recall, confusion matrices, and per-exit correctness summaries using `scripts/analyze_statistical_robustness.py`.
+- Generate ablation plots using `scripts/make_ablation_assets.py`.
+- Treat CIFAR-100 as a stretch extension after the CIFAR-10 ablation story is stronger.
 
 ## Decisions and Assumptions
 - `PROGRESS.md` is the primary working tracker; `extraPlan.md` remains a strategy reference.
@@ -78,6 +83,6 @@
 - FLOPs ratios for exits are initialized from architecture-level estimates and can be refined with profiling later.
 
 ## Next 3 Actions
-1. Update the report discussion with the REINFORCE controller results and the current best fixed-threshold tradeoff.
-2. Finalize the report/package using the completed metrics table and generated plots.
-3. Decide whether any extra ablation or cleanup is worth doing before submission.
+1. Run `scripts/run_threshold_ablation.py --run-name 2026-06-19-deeper-experiments`.
+2. Run `scripts/run_controller_lambda_sweep.py --run-name 2026-06-19-deeper-experiments`, then `scripts/run_reinforce_sweep.py --run-name 2026-06-19-deeper-experiments`.
+3. Run `scripts/analyze_statistical_robustness.py` and `scripts/make_ablation_assets.py` for the same run name, then update the report with the stronger ablation evidence.

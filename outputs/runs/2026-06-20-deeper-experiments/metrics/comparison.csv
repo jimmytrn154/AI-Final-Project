@@ -1,0 +1,3 @@
+method,accuracy,flops_per_sample,flops_reduction,latency_ms,latency_reduction,co2_kg,co2_reduction,avg_exit,notes
+full_resnet18,0.8826,557889024.0,0.0,2.1821806653557965,0.0,9.230857438604639e-05,0.0,final,Measured directly from the baseline model.
+early_exit_resnet18,0.8774,558008640.0,0.0,2.605816933404033,0.0,0.0001487712923092876,0.0,n/a,Backbone with auxiliary exits trained jointly; no early-exit policy applied.

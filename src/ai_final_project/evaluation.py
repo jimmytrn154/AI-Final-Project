@@ -36,6 +36,71 @@ def evaluate_classifier(
     }
 
 
+def _records_from_logits(
+    logits: torch.Tensor,
+    labels: torch.Tensor,
+    exit_indices: torch.Tensor,
+    flops_ratios: list[float],
+    method: str,
+) -> list[dict[str, Any]]:
+    predictions = logits.argmax(dim=1)
+    confidences = softmax_confidence(logits)
+    records = []
+    for sample_index in range(labels.size(0)):
+        exit_index = int(exit_indices[sample_index].item())
+        prediction = int(predictions[sample_index].item())
+        label = int(labels[sample_index].item())
+        records.append(
+            {
+                "method": method,
+                "label": label,
+                "prediction": prediction,
+                "exit_index": exit_index + 1,
+                "confidence": float(confidences[sample_index].item()),
+                "flops_ratio": float(flops_ratios[exit_index]),
+                "correct": prediction == label,
+            }
+        )
+    return records
+
+
+def collect_classifier_records(
+    model: torch.nn.Module,
+    dataloader: DataLoader,
+    device: torch.device,
+    method: str = "full_resnet18",
+) -> list[dict[str, Any]]:
+    model.eval()
+    records: list[dict[str, Any]] = []
+    with torch.no_grad():
+        for images, labels in dataloader:
+            images = images.to(device)
+            labels = labels.to(device)
+            logits = model(images)
+            exit_indices = torch.zeros(labels.size(0), dtype=torch.long, device=device)
+            records.extend(_records_from_logits(logits, labels, exit_indices, [1.0], method))
+    return records
+
+
+def collect_early_exit_final_records(
+    model: torch.nn.Module,
+    dataloader: DataLoader,
+    device: torch.device,
+    method: str = "early_exit_final",
+) -> list[dict[str, Any]]:
+    model.eval()
+    records: list[dict[str, Any]] = []
+    final_index = len(model.exit_names) - 1
+    with torch.no_grad():
+        for images, labels in dataloader:
+            images = images.to(device)
+            labels = labels.to(device)
+            logits = model.forward_all_exits(images)[-1]
+            exit_indices = torch.full((labels.size(0),), final_index, dtype=torch.long, device=device)
+            records.extend(_records_from_logits(logits, labels, exit_indices, model.flops_ratios, method))
+    return records
+
+
 def evaluate_early_exit_model(
     model: torch.nn.Module,
     dataloader: DataLoader,
@@ -152,6 +217,75 @@ def evaluate_exit_strategy(
         "alpha": alpha,
         "strategy": strategy,
     }
+
+
+def collect_exit_strategy_records(
+    model: torch.nn.Module,
+    dataloader: DataLoader,
+    device: torch.device,
+    strategy: str,
+    threshold: float,
+    alpha: float = 0.0,
+    method: str | None = None,
+) -> list[dict[str, Any]]:
+    model.eval()
+    records: list[dict[str, Any]] = []
+    method_name = method or f"{strategy}_threshold"
+
+    with torch.no_grad():
+        for images, labels in dataloader:
+            images = images.to(device)
+            labels = labels.to(device)
+            logits_list = model(images)
+            chosen_logits, exit_indices = decide_exit(
+                logits_list=logits_list,
+                flops_ratios=model.flops_ratios,
+                strategy=strategy,
+                threshold=threshold,
+                alpha=alpha,
+            )
+            records.extend(_records_from_logits(chosen_logits, labels, exit_indices, model.flops_ratios, method_name))
+    return records
+
+
+def collect_controller_records(
+    model: torch.nn.Module,
+    controller: torch.nn.Module,
+    dataloader: DataLoader,
+    device: torch.device,
+    method: str = "learned_controller",
+) -> list[dict[str, Any]]:
+    model.eval()
+    controller.eval()
+    records: list[dict[str, Any]] = []
+
+    with torch.no_grad():
+        for images, labels in dataloader:
+            images = images.to(device)
+            labels = labels.to(device)
+            chosen_logits, exit_indices = model.forward_with_supervised_controller(images, controller)
+            records.extend(_records_from_logits(chosen_logits, labels, exit_indices, model.flops_ratios, method))
+    return records
+
+
+def collect_reinforce_controller_records(
+    model: torch.nn.Module,
+    controller: torch.nn.Module,
+    dataloader: DataLoader,
+    device: torch.device,
+    method: str = "reinforce_controller",
+) -> list[dict[str, Any]]:
+    model.eval()
+    controller.eval()
+    records: list[dict[str, Any]] = []
+
+    with torch.no_grad():
+        for images, labels in dataloader:
+            images = images.to(device)
+            labels = labels.to(device)
+            chosen_logits, exit_indices = model.forward_with_reinforce_controller(images, controller)
+            records.extend(_records_from_logits(chosen_logits, labels, exit_indices, model.flops_ratios, method))
+    return records
 
 
 def benchmark_exit_strategy_latency(
