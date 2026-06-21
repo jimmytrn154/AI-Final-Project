@@ -1,0 +1,330 @@
+{
+  "papers": [
+    {
+      "paperId": "arxiv:1512.03385",
+      "title": "Deep Residual Learning for Image Recognition",
+      "year": 2015,
+      "venue": "arXiv",
+      "abstract": "Introduces residual learning to make very deep convolutional networks easier to optimize, and reports strong image-classification and CIFAR-10 results with substantially deeper models.",
+      "authors": [
+        {
+          "name": "Kaiming He"
+        },
+        {
+          "name": "Xiangyu Zhang"
+        },
+        {
+          "name": "Shaoqing Ren"
+        },
+        {
+          "name": "Jian Sun"
+        }
+      ],
+      "externalIds": {
+        "ArXiv": "1512.03385"
+      },
+      "source_url": "https://arxiv.org/abs/1512.03385",
+      "verified_from": [
+        "arXiv search result",
+        "paper title and author match verified via web search"
+      ],
+      "bibtex_key": "he2015deep"
+    },
+    {
+      "paperId": "arxiv:1510.00149",
+      "title": "Deep Compression: Compressing Deep Neural Networks with Pruning, Trained Quantization and Huffman Coding",
+      "year": 2015,
+      "venue": "arXiv",
+      "abstract": "Presents a three-stage compression pipeline based on pruning, quantization, and Huffman coding to reduce neural-network storage and improve deployment efficiency without materially hurting accuracy.",
+      "authors": [
+        {
+          "name": "Song Han"
+        },
+        {
+          "name": "Huizi Mao"
+        },
+        {
+          "name": "William J. Dally"
+        }
+      ],
+      "externalIds": {
+        "ArXiv": "1510.00149"
+      },
+      "source_url": "https://arxiv.org/abs/1510.00149",
+      "verified_from": [
+        "arXiv search result",
+        "paper title and author match verified via web search"
+      ],
+      "bibtex_key": "han2015deep"
+    },
+    {
+      "paperId": "arxiv:1709.01686",
+      "title": "BranchyNet: Fast Inference via Early Exiting from Deep Neural Networks",
+      "year": 2017,
+      "venue": "arXiv",
+      "abstract": "Adds side-branch classifiers to deep networks so easy examples can exit early, reducing inference time and energy while preserving strong accuracy on datasets including CIFAR-10.",
+      "authors": [
+        {
+          "name": "Surat Teerapittayanon"
+        },
+        {
+          "name": "Bradley McDanel"
+        },
+        {
+          "name": "H. T. Kung"
+        }
+      ],
+      "externalIds": {
+        "ArXiv": "1709.01686"
+      },
+      "source_url": "https://arxiv.org/abs/1709.01686",
+      "verified_from": [
+        "arXiv search result",
+        "paper title and author match verified via web search"
+      ],
+      "bibtex_key": "teerapittayanon2017branchynet"
+    },
+    {
+      "paperId": "arxiv:1703.09844",
+      "title": "Multi-Scale Dense Networks for Resource Efficient Image Classification",
+      "year": 2017,
+      "venue": "arXiv",
+      "abstract": "Studies classification under test-time resource limits and proposes a multi-scale dense architecture with early exits for anytime and budgeted batch prediction.",
+      "authors": [
+        {
+          "name": "Gao Huang"
+        },
+        {
+          "name": "Danlu Chen"
+        },
+        {
+          "name": "Tianhong Li"
+        },
+        {
+          "name": "Felix Wu"
+        },
+        {
+          "name": "Laurens van der Maaten"
+        },
+        {
+          "name": "Kilian Q. Weinberger"
+        }
+      ],
+      "externalIds": {
+        "ArXiv": "1703.09844"
+      },
+      "source_url": "https://arxiv.org/abs/1703.09844",
+      "verified_from": [
+        "arXiv search result",
+        "paper title and author match verified via web search"
+      ],
+      "bibtex_key": "huang2017multiscale"
+    },
+    {
+      "paperId": "arxiv:1603.08983",
+      "title": "Adaptive Computation Time for Recurrent Neural Networks",
+      "year": 2016,
+      "venue": "arXiv",
+      "abstract": "Introduces a differentiable mechanism that lets recurrent networks adapt how much computation they spend on each input, providing a foundational view of input-dependent computation.",
+      "authors": [
+        {
+          "name": "Alex Graves"
+        }
+      ],
+      "externalIds": {
+        "ArXiv": "1603.08983"
+      },
+      "source_url": "https://arxiv.org/abs/1603.08983",
+      "verified_from": [
+        "arXiv search result",
+        "paper title and author match verified via web search"
+      ],
+      "bibtex_key": "graves2016adaptive"
+    },
+    {
+      "paperId": "arxiv:1705.08500",
+      "title": "Selective Classification for Deep Neural Networks",
+      "year": 2017,
+      "venue": "arXiv",
+      "abstract": "Adapts selective classification to deep neural networks by explicitly trading coverage for risk, giving a principled backdrop for confidence-based decision rules.",
+      "authors": [
+        {
+          "name": "Yonatan Geifman"
+        },
+        {
+          "name": "Ran El-Yaniv"
+        }
+      ],
+      "externalIds": {
+        "ArXiv": "1705.08500"
+      },
+      "source_url": "https://arxiv.org/abs/1705.08500",
+      "verified_from": [
+        "arXiv search result",
+        "paper title and author match verified via web search"
+      ],
+      "bibtex_key": "geifman2017selective"
+    },
+    {
+      "paperId": "arxiv:1711.09485",
+      "title": "SkipNet: Learning Dynamic Routing in Convolutional Networks",
+      "year": 2017,
+      "venue": "arXiv",
+      "abstract": "Learns to skip convolutional blocks on a per-input basis using a hybrid supervised and reinforcement-learning training strategy for dynamic routing.",
+      "authors": [
+        {
+          "name": "Xin Wang"
+        },
+        {
+          "name": "Fisher Yu"
+        },
+        {
+          "name": "Zi-Yi Dou"
+        },
+        {
+          "name": "Trevor Darrell"
+        },
+        {
+          "name": "Joseph E. Gonzalez"
+        }
+      ],
+      "externalIds": {
+        "ArXiv": "1711.09485"
+      },
+      "source_url": "https://arxiv.org/abs/1711.09485",
+      "verified_from": [
+        "arXiv search result",
+        "paper title and author match verified via web search"
+      ],
+      "bibtex_key": "wang2017skipnet"
+    },
+    {
+      "paperId": "arxiv:1711.08393",
+      "title": "BlockDrop: Dynamic Inference Paths in Residual Networks",
+      "year": 2017,
+      "venue": "arXiv",
+      "abstract": "Uses reinforcement learning to choose which residual blocks to execute at inference time, learning input-specific computation paths for efficient recognition.",
+      "authors": [
+        {
+          "name": "Zuxuan Wu"
+        },
+        {
+          "name": "Tushar Nagarajan"
+        },
+        {
+          "name": "Abhishek Kumar"
+        },
+        {
+          "name": "Steven Rennie"
+        },
+        {
+          "name": "Larry S. Davis"
+        },
+        {
+          "name": "Kristen Grauman"
+        },
+        {
+          "name": "Rogerio Feris"
+        }
+      ],
+      "externalIds": {
+        "ArXiv": "1711.08393"
+      },
+      "source_url": "https://arxiv.org/abs/1711.08393",
+      "verified_from": [
+        "arXiv search result",
+        "paper title and author match verified via web search"
+      ],
+      "bibtex_key": "wu2017blockdrop"
+    },
+    {
+      "paperId": "doi:10.1109/TPAMI.2021.3117837",
+      "title": "Dynamic Neural Networks: A Survey",
+      "year": 2021,
+      "venue": "IEEE Transactions on Pattern Analysis and Machine Intelligence",
+      "abstract": "Surveys dynamic neural networks that adapt structure or parameters to inputs, organizing the field around instance-wise, spatial-wise, and temporal-wise adaptive computation.",
+      "authors": [
+        {
+          "name": "Yizeng Han"
+        },
+        {
+          "name": "Gao Huang"
+        },
+        {
+          "name": "Shiji Song"
+        },
+        {
+          "name": "Le Yang"
+        },
+        {
+          "name": "Honghui Wang"
+        },
+        {
+          "name": "Yulin Wang"
+        }
+      ],
+      "externalIds": {
+        "DOI": "10.1109/TPAMI.2021.3117837",
+        "ArXiv": "2102.04906"
+      },
+      "source_url": "https://arxiv.org/abs/2102.04906",
+      "verified_from": [
+        "arXiv search result",
+        "TPAMI DOI corroborated via web search"
+      ],
+      "bibtex_key": "han2021dynamic"
+    },
+    {
+      "paperId": "arxiv:1907.10597",
+      "title": "Green AI",
+      "year": 2019,
+      "venue": "arXiv",
+      "abstract": "Argues that AI evaluation should report efficiency and resource cost alongside quality metrics, framing computational footprint as a first-class research concern.",
+      "authors": [
+        {
+          "name": "Roy Schwartz"
+        },
+        {
+          "name": "Jesse Dodge"
+        },
+        {
+          "name": "Noah A. Smith"
+        },
+        {
+          "name": "Oren Etzioni"
+        }
+      ],
+      "externalIds": {
+        "ArXiv": "1907.10597"
+      },
+      "source_url": "https://arxiv.org/abs/1907.10597",
+      "verified_from": [
+        "arXiv search result",
+        "paper title and author match verified via web search"
+      ],
+      "bibtex_key": "schwartz2019green"
+    },
+    {
+      "paperId": "toronto:learning-features-2009-tr",
+      "title": "Learning Multiple Layers of Features from Tiny Images",
+      "year": 2009,
+      "venue": "University of Toronto Technical Report",
+      "abstract": "Introduces the CIFAR-10 and CIFAR-100 image classification datasets and presents baseline feature-learning experiments on tiny natural images.",
+      "authors": [
+        {
+          "name": "Alex Krizhevsky"
+        }
+      ],
+      "externalIds": {
+        "URL": "https://www.cs.toronto.edu/~kriz/learning-features-2009-TR.pdf"
+      },
+      "source_url": "https://www.cs.toronto.edu/~kriz/cifar.html",
+      "verified_from": [
+        "CIFAR dataset page",
+        "technical report PDF title and author verified via University of Toronto source"
+      ],
+      "bibtex_key": "krizhevsky2009cifar"
+    }
+  ],
+  "min_cite_paper_count": 9
+}

@@ -118,7 +118,7 @@ Important files:
 * `outputs/runs/2026-06-20-deeper-experiments/metrics/classification_metrics.json`
 * `outputs/runs/2026-06-20-deeper-experiments/metrics/bootstrap_statistics.json`
 
-The earlier run may be used only as supporting evidence:
+The earlier run may be used only as supporting evidence but not important as the folder outputs/runs/2026-06-20-deeper-experiments:
 
 * `outputs/runs/2026-06-19-direct-latency/`
 
@@ -187,18 +187,8 @@ Use this file for reward/lambda sensitivity:
 ## 6. Existing Figure Registry
 
 Existing plots are available in:
+* `workspace/inputs/figures/`
 
-* `outputs/plots/accuracy_comparison.png`
-* `outputs/plots/accuracy_vs_flops.png`
-* `outputs/plots/accuracy_vs_latency.png`
-* `outputs/plots/co2_reduction.png`
-
-These should be copied or refined into:
-
-* `workspace/inputs/figures/accuracy_comparison.png`
-* `workspace/inputs/figures/accuracy_vs_flops.png`
-* `workspace/inputs/figures/accuracy_vs_latency.png`
-* `workspace/inputs/figures/co2_reduction.png`
 
 The plotting agent should audit these figures before regenerating them.
 
