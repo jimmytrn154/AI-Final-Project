@@ -17,7 +17,7 @@ scripts/data/
 # Generated outputs
 scripts/outputs/
 
-workspace/final/
+# workspace/final/
 workspace/drafts/
 workspace/refinement/
 workspace/outline*.json
