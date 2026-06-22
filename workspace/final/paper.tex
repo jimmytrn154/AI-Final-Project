@@ -25,8 +25,10 @@
 \usepackage{xcolor}
 \usepackage{enumitem}
 \usepackage{titlesec}
-\usepackage[section]{placeins}
+\usepackage{placeins}
 \usepackage{float}
+\usepackage{dblfloatfix}
+\usepackage{balance}
 
 \setlist{nosep,leftmargin=*}
 \titlespacing*{\section}{0pt}{0.85em}{0.45em}
@@ -42,10 +44,21 @@
 \setlength{\textfloatsep}{8pt plus 1pt minus 2pt}
 \setlength{\floatsep}{6pt plus 1pt minus 2pt}
 \setlength{\intextsep}{6pt plus 1pt minus 2pt}
-\graphicspath{{../figures/}}
-\raggedbottom
-\setlength{\bibsep}{0pt plus 0.1ex}
-\renewcommand{\bibfont}{\footnotesize}
+\graphicspath{{../figures/}{figures/}}
+% Favor dense two-column pages and flexible float placement.
+\flushbottom
+\setcounter{topnumber}{5}
+\setcounter{bottomnumber}{5}
+\setcounter{totalnumber}{10}
+\setcounter{dbltopnumber}{4}
+\renewcommand{\topfraction}{0.96}
+\renewcommand{\bottomfraction}{0.96}
+\renewcommand{\textfraction}{0.02}
+\renewcommand{\floatpagefraction}{0.78}
+\renewcommand{\dbltopfraction}{0.96}
+\renewcommand{\dblfloatpagefraction}{0.78}
+\setlength{\bibsep}{0pt}
+\renewcommand{\bibfont}{\scriptsize}
 \newcolumntype{Y}{>{\raggedright\arraybackslash}X}
 \newcolumntype{Z}{>{\centering\arraybackslash}p{0.072\textwidth}}
 
@@ -128,6 +141,21 @@ The backbone is trained jointly across exits using a weighted sum of cross-entro
 \end{equation}
 with verified loss weights $[\alpha_1, \alpha_2, \alpha_3, \alpha_4] = [0.3, 0.5, 0.7, 1.0]$. This training objective encourages earlier exits to become useful without discarding the deepest classifier.
 
+Figure~\ref{fig:method-pipeline} summarizes the architectural difference between the full baseline and the early-exit backbone.
+
+\begin{figure*}[!tbp]
+    \centering
+    \fbox{%
+    \begin{minipage}[c][0.24\textheight][c]{0.92\textwidth}
+        \centering
+        \textbf{Placeholder: Full Baseline vs. Early-Exit Backbone}\\[0.5em]
+        \footnotesize
+        Draw a two-lane left-to-right schematic. Top lane: CIFAR-10 image $\rightarrow$ full ResNet-18 backbone $\rightarrow$ final classifier $\rightarrow$ prediction. Bottom lane: CIFAR-10 image $\rightarrow$ stem/layer 1 + \texttt{exit\_1} (0.22x FLOPs) $\rightarrow$ layer 2 + \texttt{exit\_2} (0.42x) $\rightarrow$ layer 3 + \texttt{exit\_3} (0.68x) $\rightarrow$ layer 4 + \texttt{final\_exit} (1.00x). Add small decision markers after exits 1--3 labeled confidence or controller decision. Use distinct colors for backbone blocks, exit heads, and policy decisions; arrows should make clear that early-exit policies can stop before deeper layers.
+    \end{minipage}}
+    \caption{Baseline and early-exit inference pipeline. The full \backbone{} baseline always executes the complete network, whereas the early-exit model exposes intermediate classifiers that allow fixed-threshold, dynamic-threshold, supervised-controller, and REINFORCE policies to stop computation early.}
+    \label{fig:method-pipeline}
+\end{figure*}
+
 \subsection{Fixed Confidence Thresholding}
 
 The fixed-threshold policy exits at the first head whose confidence exceeds a constant threshold $\tau$:
@@ -135,6 +163,21 @@ The fixed-threshold policy exits at the first head whose confidence exceeds a co
     \text{exit at } i \quad \text{if} \quad c_i \geq \tau.
 \end{equation}
 The deeper ablation run evaluates a dense sweep from $\tau = 0.50$ to $\tau = 0.99$ and therefore exposes the full tradeoff curve rather than only a small set of hand-picked thresholds.
+
+Figure~\ref{fig:fixed-routing} shows the fixed-threshold decision rule at a single exit.
+
+\begin{figure}[!tbp]
+    \centering
+    \fbox{%
+    \begin{minipage}[c][0.18\textheight][c]{0.94\linewidth}
+        \centering
+        \textbf{Placeholder: Confidence-Based Threshold Routing}\\[0.5em]
+        \footnotesize
+        Draw a compact flowchart: exit logits $z_i$ $\rightarrow$ softmax probabilities $p_i$ $\rightarrow$ confidence $c_i=\max_j p_i(j)$ $\rightarrow$ compare $c_i \geq \tau$. Branch outcomes: yes $\rightarrow$ exit and predict; no $\rightarrow$ continue to the next block. Include a tiny example path where exit 1 has $c_1 < \tau$ and continues, while exit 2 has $c_2 \geq \tau$ and stops.
+    \end{minipage}}
+    \caption{Fixed confidence-threshold routing at one exit. Each intermediate classifier produces a confidence score, and the policy stops at the first exit whose confidence exceeds the threshold $\tau$.}
+    \label{fig:fixed-routing}
+\end{figure}
 
 \subsection{Budget-Aware Dynamic Thresholding}
 
@@ -144,7 +187,7 @@ Dynamic thresholding modifies the exit condition using the cumulative compute al
     \frac{\operatorname{FLOPs}_i}
     {\operatorname{FLOPs}_{\text{full}}}
 \end{equation}
-denote the normalized compute ratio at exit $i$. In the implementation, the accuracy-first mode increases the threshold with depth,
+denote the normalized compute ratio at exit $i$. The term $\tau_{\text{base}}$ is the base confidence threshold: it is the starting threshold before any depth-dependent adjustment is applied, and therefore plays the same role as a fixed threshold when $\alpha = 0$. In the implementation, the accuracy-first mode increases the threshold with depth,
 \begin{equation}
     \tau_i = \tau_{\text{base}} + \alpha r_i,
 \end{equation}
@@ -153,6 +196,21 @@ while the budget-first mode decreases it with depth,
     \tau_i = \tau_{\text{base}} - \alpha r_i.
 \end{equation}
 This gives the policy extra flexibility, but it also introduces a second tuning parameter $\alpha$ and a design choice between accuracy-first and budget-first behavior.
+
+Figure~\ref{fig:dynamic-schedule} contrasts the two dynamic threshold schedules.
+
+\begin{figure}[!tbp]
+    \centering
+    \fbox{%
+    \begin{minipage}[c][0.18\textheight][c]{0.94\linewidth}
+        \centering
+        \textbf{Placeholder: Dynamic Threshold Schedule}\\[0.5em]
+        \footnotesize
+        Draw a small conceptual plot with exit depth or FLOPs ratio $r_i$ on the x-axis and threshold $\tau_i$ on the y-axis. Show a horizontal reference line for $\tau_{\text{base}}$. Add an upward line for accuracy-first, labeled $\tau_i=\tau_{\text{base}}+\alpha r_i$, and a downward line for budget-first, labeled $\tau_i=\tau_{\text{base}}-\alpha r_i$. Annotate that $\alpha=0$ collapses the policy back to a fixed threshold.
+    \end{minipage}}
+    \caption{Dynamic threshold schedules. The base threshold $\tau_{\text{base}}$ sets the starting confidence requirement, while $\alpha$ adjusts how strict or permissive the policy becomes as more computation has already been spent.}
+    \label{fig:dynamic-schedule}
+\end{figure}
 
 \subsection{Supervised Exit Controller}
 
@@ -173,6 +231,21 @@ This controller is supervised because its targets are generated offline from a f
     \mathbf{1}[\hat{y}_i = y] - \lambda r_i,
 \end{equation}
 so changing $\lambda$ changes the supervision target itself. After the target exit is chosen, the dataset builder creates one training example for each non-final exit up to that target: the label is $1$ if the current exit is the selected target exit and $0$ if the controller should continue deeper. Exits after the chosen target are dropped from the supervised dataset because the routing decision has already been resolved. The deeper controller sweep reported later uses \texttt{best\_reward} supervision rather than the earlier \texttt{earliest\_correct} baseline, which makes the lambda sweep a genuine reward-label ablation instead of a purely optimization-side hyperparameter search.
+
+Figure~\ref{fig:supervised-labels} illustrates how generated target exits become supervised binary decisions.
+
+\begin{figure*}[!tbp]
+    \centering
+    \fbox{%
+    \begin{minipage}[c][0.24\textheight][c]{0.90\textwidth}
+        \centering
+        \textbf{Placeholder: Supervised Controller Label Generation}\\[0.5em]
+        \footnotesize
+        Draw a pipeline from frozen early-exit backbone $\rightarrow$ all exit logits and predictions $\rightarrow$ label generator $\rightarrow$ stage-wise controller dataset $\rightarrow$ MLP trained with cross-entropy. In the label generator, show two options: \texttt{earliest\_correct} selects the first correct exit, and \texttt{best\_reward} selects $\arg\max_i\,\mathbf{1}[\hat{y}_i=y]-\lambda r_i$. In the dataset-builder block, show records for exits before or at the target: \texttt{continue = 0} until the selected target exit, then \texttt{exit now = 1}. Use a callout that exits after the target are not included.
+    \end{minipage}}
+    \caption{Supervised controller training pipeline. The controller is supervised because the frozen early-exit model first generates target exits, which are converted into binary continue-or-exit labels for stage-wise cross-entropy training.}
+    \label{fig:supervised-labels}
+\end{figure*}
 
 \subsection{REINFORCE Exit Controller}
 
@@ -210,6 +283,21 @@ where $b$ is a moving-average reward baseline and $\beta$ is the entropy-regular
     b \leftarrow \mu b + (1-\mu)\bar{R}_{\text{batch}}.
 \end{equation}
 The implementation freezes the early-exit backbone during policy optimization, warm-starts the controller from a supervised checkpoint by default, clips gradients to stabilize training, and selects the best checkpoint by validation average reward. At test time, evaluation is deterministic: the controller uses the argmax policy action at each exit rather than sampling. In short, the supervised controller imitates labels generated from backbone outputs, whereas REINFORCE directly optimizes expected reward over the sequential exit decisions themselves. The reported sweep varies $\lambda_{\text{cost}} \in \{0.05, 0.10, 0.20, 0.30, 0.50\}$.
+
+Figure~\ref{fig:reinforce-policy} connects the sequential exit process to the REINFORCE update.
+
+\begin{figure*}[!tbp]
+    \centering
+    \fbox{%
+    \begin{minipage}[c][0.26\textheight][c]{0.90\textwidth}
+        \centering
+        \textbf{Placeholder: REINFORCE Sequential Exit Policy}\\[0.5em]
+        \footnotesize
+        Draw a sequential decision diagram across \texttt{exit\_1}, \texttt{exit\_2}, \texttt{exit\_3}, and \texttt{final\_exit}. At exits 1--3, show state $s_i^{\text{rl}}$ entering the controller, a categorical action sampled during training, and branches for \texttt{continue} or \texttt{exit}. Add a forced-final-exit path when no earlier exit is selected. On the right, show reward computation $R=\mathbf{1}[\hat{y}=y]-\lambda_{\text{cost}}r_i$ and the policy-gradient loss with moving-average baseline $b$, entropy regularization $\beta$, and gradient clipping. Add a test-time callout: use argmax action rather than sampling.
+    \end{minipage}}
+    \caption{REINFORCE controller training and evaluation flow. Unlike the supervised controller, the REINFORCE policy samples sequential routing actions during training and updates the controller from the reward assigned to the selected exit.}
+    \label{fig:reinforce-policy}
+\end{figure*}
 
 \section{Experimental Setup}
 
@@ -254,7 +342,7 @@ The project includes bootstrap resampling of deterministic test predictions, whi
 
 Table~\ref{tab:main-results} summarizes one representative result per method family. The fixed-threshold and REINFORCE rows are the strongest practical tradeoff points in the current evidence. Figure~\ref{fig:accuracy-flops} shows the broader frontier: fixed thresholds and REINFORCE dominate the supervised controller, while dynamic thresholding often overlaps with simpler fixed-threshold behavior or collapses to the final exit.
 
-\begin{table*}[!t]
+\begin{table*}[!tbp]
 \centering
 \caption{Main comparison across representative methods. Baseline and early-exit rows come from the run-specific \texttt{comparison.csv}; policy-family rows come from the \texttt{best\_result} entries of the family-specific JSON files. Baseline and early-exit CO$_2$ are CodeCarbon training-run values, while policy CO$_2$ values are FLOPs-scaled estimates.}
 \label{tab:main-results}
@@ -275,9 +363,9 @@ REINFORCE controller ($\lambda=0.05$) & 87.69\% & 281.52M & 49.54\% & 0.086 ms &
 \end{tabularx}
 \end{table*}
 
-\begin{figure*}[!t]
+\begin{figure*}[!tbp]
     \centering
-    \includegraphics[width=\linewidth]{accuracy_flops_frontier.png}
+    \includegraphics[width=0.94\textwidth,height=0.40\textheight,keepaspectratio]{accuracy_flops_frontier.png}
     \caption{Accuracy versus FLOPs reduction across all evaluated policy families in the deeper experiment run. Fixed thresholds and REINFORCE occupy the strongest tradeoff region, while the supervised \texttt{best\_reward} controller remains far below the main frontier.}
     \label{fig:accuracy-flops}
 \end{figure*}
@@ -294,23 +382,23 @@ REINFORCE behaves much better. The best-accuracy REINFORCE run uses $\lambda_{\t
 
 For easier side-by-side reading, the three policy-sweep plots are grouped together in Figure~\ref{fig:policy-sweeps} beneath the main two-column frontier figure.
 
-\begin{figure*}[!t]
+\begin{figure*}[!tbp]
     \centering
     \begin{subfigure}[t]{0.32\textwidth}
         \centering
-        \includegraphics[width=\linewidth]{accuracy_vs_threshold.png}
+        \includegraphics[width=\linewidth,height=0.145\textheight,keepaspectratio]{accuracy_vs_threshold.png}
         \caption{Fixed-threshold ablation. Higher confidence thresholds improve accuracy but reduce the amount of computation saved.}
         \label{fig:threshold-ablation}
     \end{subfigure}\hfill
     \begin{subfigure}[t]{0.32\textwidth}
         \centering
-        \includegraphics[width=\linewidth]{controller_lambda_tradeoff.png}
+        \includegraphics[width=\linewidth,height=0.145\textheight,keepaspectratio]{controller_lambda_tradeoff.png}
         \caption{Supervised \texttt{best\_reward} controller sweep. Every setting remains far below the strongest threshold and REINFORCE baselines in accuracy.}
         \label{fig:controller-sweep}
     \end{subfigure}\hfill
     \begin{subfigure}[t]{0.32\textwidth}
         \centering
-        \includegraphics[width=\linewidth]{reinforce_lambda_tradeoff.png}
+        \includegraphics[width=\linewidth,height=0.145\textheight,keepaspectratio]{reinforce_lambda_tradeoff.png}
         \caption{REINFORCE lambda sweep. Lower cost weights preserve more accuracy, while larger values encourage earlier exits.}
         \label{fig:reinforce-sweep}
     \end{subfigure}
@@ -322,7 +410,7 @@ For easier side-by-side reading, the three policy-sweep plots are grouped togeth
 
 Table~\ref{tab:ablation} collects representative ablation points across policy families. Together with Figures~\ref{fig:threshold-ablation}, \ref{fig:controller-sweep}, and \ref{fig:reinforce-sweep}, it highlights that the main design problem is not whether earlier exits save compute, but whether a policy can use them without sacrificing too much accuracy.
 
-\begin{table*}[!t]
+\begin{table*}[!tbp]
 \centering
 \caption{Representative ablation points from the source-of-truth run.}
 \label{tab:ablation}
@@ -349,14 +437,14 @@ Bootstrap resampling supports cautious comparison rather than significance claim
 
 The deeper metrics also support a more detailed view of routing behavior, uncertainty, and class-level errors. Figure~\ref{fig:exit-distribution} and Table~\ref{tab:exit-behavior} show that the strongest policies do not merely save compute; they do so through very different routing patterns. The dynamic accuracy-first policy collapses to the final head, the fixed-threshold policy uses exits 2 and 3 heavily while still sending 35.86\% of samples to the final head, the supervised controller exits 82.63\% of samples at the first head, and the strongest REINFORCE policy concentrates most traffic at exits 2 and 3.
 
-\begin{figure*}[!t]
+\begin{figure}[!tbp]
     \centering
-    \includegraphics[width=\linewidth]{exit_distribution_comparison.png}
+    \includegraphics[width=\linewidth,height=0.23\textheight,keepaspectratio]{exit_distribution_comparison.png}
     \caption{Exit-distribution comparison for representative methods. The dynamic accuracy-first policy behaves like a full-depth classifier, the fixed-threshold policy distributes samples across intermediate and final exits, the supervised controller exits overwhelmingly at the first head, and the strongest REINFORCE policy mostly routes samples to exits 2 and 3.}
     \label{fig:exit-distribution}
-\end{figure*}
+\end{figure}
 
-\begin{table*}[!t]
+\begin{table*}[!tbp]
 \centering
 \caption{Representative exit behavior from \texttt{per\_exit\_analysis.json}. Fractions are reported over the CIFAR-10 test set, and per-exit accuracies are conditional on samples that actually leave at that exit. `N/A' indicates that no test samples exited at that branch, so the corresponding conditional accuracy is undefined rather than 0\%.}
 \label{tab:exit-behavior}
@@ -374,18 +462,17 @@ REINFORCE $\lambda=0.05$ & 0.0000 & 0.6893 & 0.2987 & 0.0120 & N/A & 96.01\% & 7
 \bottomrule
 \end{tabularx}
 \end{table*}
-\FloatBarrier
 
 Figure~\ref{fig:bootstrap-ci} and Table~\ref{tab:bootstrap-summary} summarize the bootstrap uncertainty estimates. These intervals come from deterministic prediction resampling rather than repeated training seeds, so they should be read as uncertainty estimates for the observed runs rather than evidence of formal statistical significance. Even with that limitation, the baseline, fixed-threshold, dynamic, and REINFORCE intervals overlap closely, while the supervised controller is separated well below the main frontier.
 
-\begin{figure*}[!t]
+\begin{figure}[!tbp]
     \centering
-    \includegraphics[width=\linewidth]{bootstrap_confidence_intervals.png}
+    \includegraphics[width=\linewidth,height=0.23\textheight,keepaspectratio]{bootstrap_confidence_intervals.png}
     \caption{Bootstrap 95\% confidence intervals for representative method accuracies. The baseline, fixed-threshold, dynamic, and REINFORCE methods remain tightly clustered, whereas the supervised controller is clearly separated at much lower accuracy.}
     \label{fig:bootstrap-ci}
-\end{figure*}
+\end{figure}
 
-\begin{table}[H]
+\begin{table}[!tbp]
 \centering
 \caption{Bootstrap uncertainty summary from \texttt{bootstrap\_statistics.json}. The intervals are resampling-based uncertainty estimates for deterministic predictions, not repeated-training confidence bounds.}
 \label{tab:bootstrap-summary}
@@ -408,32 +495,33 @@ REINFORCE $\lambda=0.05$ & 87.70\% & 0.0034 & 87.00\% & 88.39\% \\
 
 Table~\ref{tab:classification-quality} makes the aggregate classification-quality story explicit using `classification\_metrics.json`. The baseline remains strongest on accuracy, macro-F1, weighted-F1, macro precision, and macro recall, while the fixed-threshold, dynamic, early-exit-final, and REINFORCE results all stay close together in the high-0.87 range. The supervised controller drops sharply on every classification-quality metric, and weighted-F1 remains very close to accuracy across all methods because CIFAR-10 is class-balanced and the evaluation uses equal class support.
 
-\begin{table*}[!t]
+\begin{table}[!tbp]
 \centering
 \caption{Classification-quality summary from \texttt{classification\_metrics.json}. Values are reported for the same representative methods used throughout the Results section.}
 \label{tab:classification-quality}
-\footnotesize
-\setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.05}
-\begin{tabularx}{\textwidth}{@{}Yccccc@{}}
+\scriptsize
+\setlength{\tabcolsep}{2pt}
+\renewcommand{\arraystretch}{1.03}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}lccccc@{}}
 \toprule
-Method & Accuracy & Macro-F1 & Weighted-F1 & \makecell{Macro\\Precision} & \makecell{Macro\\Recall} \\
+Method & Acc. & Macro-F1 & W.-F1 & \makecell{Macro\\Prec.} & \makecell{Macro\\Rec.} \\
 \midrule
 Baseline & 88.26\% & 88.12\% & 88.12\% & 88.76\% & 88.26\% \\
 Early-exit final & 87.74\% & 87.72\% & 87.72\% & 88.13\% & 87.74\% \\
-Fixed threshold $\tau=0.99$ & 87.73\% & 87.71\% & 87.71\% & 88.13\% & 87.73\% \\
-Dynamic (acc.-first $0.90/0.50$) & 87.74\% & 87.72\% & 87.72\% & 88.13\% & 87.74\% \\
-Supervised controller $\lambda=0.30$ & 72.52\% & 72.03\% & 72.03\% & 72.86\% & 72.52\% \\
+Fixed $\tau=0.99$ & 87.73\% & 87.71\% & 87.71\% & 88.13\% & 87.73\% \\
+Dynamic acc.-first & 87.74\% & 87.72\% & 87.72\% & 88.13\% & 87.74\% \\
+Supervised $\lambda=0.30$ & 72.52\% & 72.03\% & 72.03\% & 72.86\% & 72.52\% \\
 REINFORCE $\lambda=0.05$ & 87.69\% & 87.66\% & 87.66\% & 88.09\% & 87.69\% \\
 \bottomrule
-\end{tabularx}
-\end{table*}
+\end{tabular}}
+\end{table}
 
 Finally, Figure~\ref{fig:confusion-matrix} shows that the strongest threshold and REINFORCE policies largely preserve the baseline confusion structure, while the supervised controller causes broader degradation. Table~\ref{tab:classification-quality} is consistent with that picture: the small macro-F1 gap between the baseline and the strongest threshold or REINFORCE policies indicates limited aggregate quality loss, whereas the supervised controller's drop is visible both in the confusion matrix and in every aggregate classification metric. The per-class metrics sharpen that conclusion further: relative to the baseline, the supervised controller loses 38.6 points on class 2, 23.5 points on class 4, and 19.6 points on class 5, whereas the strongest REINFORCE policy stays much closer to the baseline and even improves classes 3, 6, and 8 slightly in the current test run. The dynamic accuracy-first policy looks nearly identical to the early-exit final head because it never exits early.
 
-\begin{figure*}[!t]
+\begin{figure*}[!tbp]
     \centering
-    \includegraphics[width=\linewidth]{confusion_matrix_best_methods.png}
+    \includegraphics[width=0.84\textwidth,height=0.43\textheight,keepaspectratio]{confusion_matrix_best_methods.png}
     \caption{Confusion matrices for the baseline, early-exit final head, best fixed-threshold policy, best dynamic policy, best supervised controller, and best REINFORCE controller. The supervised controller shows the broadest degradation pattern, while fixed threshold and REINFORCE remain visually close to the baseline.}
     \label{fig:confusion-matrix}
 \end{figure*}
@@ -463,7 +551,7 @@ The most practical result in the current experiments is the fixed-threshold poli
 \section*{Acknowledgements}
 
 I would like to express my sincere gratitude to Professor Leandro Marcolino, the course instructor, for his guidance and constructive advice throughout this project. His input contributed significantly to improving both the quality of the experimental investigation and the development of the project ideas. I also acknowledge the use of open-source tools, including Python, PyTorch, and Matplotlib, in implementing and evaluating this work. AI-assisted tools were used only to support writing clarity, LaTeX formatting, and report organization; all implementation decisions, experiments, analysis, and final claims were reviewed and verified by the author. Additional details are provided in the required statement file.
-\clearpage
+\balance
 \bibliographystyle{plainnat}
 \bibliography{refs}
 
