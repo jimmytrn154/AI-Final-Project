@@ -1,0 +1,33 @@
+\documentclass[11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{parskip}
+\usepackage[hidelinks]{hyperref}
+
+\title{Statement on Implementation Work}
+\author{Tran Anh Chuong}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+This document explains how the implementation work for the COMP2050 Artificial Intelligence Programming Project was performed.
+
+The project topic is adaptive inference for image classification on CIFAR-10 using a ResNet-18 backbone with early exits. The implementation work included building and testing a full baseline classifier, an early-exit ResNet-18 model, fixed-threshold and dynamic-threshold exit policies, a supervised learned exit controller, a REINFORCE-based controller, experiment scripts, metric-reporting utilities, and the plotting and reporting pipeline used to summarize the results.
+
+The core project code, experiment setup, debugging decisions, and interpretation of results were carried out by the author. This includes selecting the project direction, deciding which methods to implement, choosing the experimental comparisons, reviewing training and evaluation outputs, checking whether reported claims matched the saved metrics, and revising the implementation when inconsistencies or measurement issues were found.
+
+Open-source software libraries were used as development dependencies and runtime frameworks, especially Python, PyTorch, Torchvision, Matplotlib, and related scientific-computing utilities. These tools provided the standard machine-learning and plotting infrastructure, but the project-specific model variants, controller logic, policy evaluation scripts, report assets, and experiment organization were implemented and adapted for this project.
+
+AI-assisted tools were used in a limited supporting role during the project. Their use included help with code drafting, debugging suggestions, LaTeX formatting, wording improvements, figure-placement planning, and manuscript organization. AI assistance was not treated as a source of experimental evidence and was not used to replace verification of results. All code changes suggested with AI assistance were reviewed by the author, integrated into the repository intentionally, and checked against the actual project files and outputs before being retained.
+
+All reported experimental claims in the final paper were tied back to saved project artifacts such as JSON metrics files, CSV summaries, run manifests, and generated plots. Where a quantity was directly measured, the paper states that explicitly. Where a quantity was estimated or scaled, the paper also states that explicitly. This distinction, especially for policy-level CO$_2$ values, was checked manually during report preparation.
+
+The writing of the final report was also reviewed by the author. AI-assisted tools were used to improve clarity and formatting, but the final structure, methodological descriptions, limitations, and conclusions were chosen by the author based on the implemented code and recorded experiment results.
+
+In summary, the implementation work was performed by the author with support from standard software libraries and AI-assisted productivity tools. The author remained responsible for the project design, implementation choices, experiment execution, verification of outputs, and the final claims presented in the submission.
+
+\end{document}
