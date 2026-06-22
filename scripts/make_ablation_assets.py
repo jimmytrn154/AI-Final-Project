@@ -144,9 +144,10 @@ def save_bootstrap_intervals(metrics_dir: Path, plots_dir: Path) -> None:
     means = [payload[method]["accuracy"]["mean"] for method in methods]
     lower = [mean - payload[method]["accuracy"]["ci95_low"] for mean, method in zip(means, methods)]
     upper = [payload[method]["accuracy"]["ci95_high"] - mean for mean, method in zip(means, methods)]
+    colors = ["#4C78A8", "#72B7B2", "#F58518", "#54A24B", "#E45756", "#B279A2"][: len(methods)]
 
     _, axis = plt.subplots(figsize=(10, 5))
-    axis.bar(methods, means, yerr=[lower, upper], capsize=4)
+    axis.bar(methods, means, yerr=[lower, upper], capsize=4, color=colors)
     axis.set_title("Bootstrap Accuracy Confidence Intervals")
     axis.set_ylabel("Accuracy")
     plt.xticks(rotation=35, ha="right")

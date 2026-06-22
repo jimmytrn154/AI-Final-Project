@@ -43,6 +43,15 @@ PANEL_TITLES = {
     "reinforce_controller_lambda_0.05": "REINFORCE $\\lambda=0.05$",
 }
 
+METHOD_COLORS = {
+    "full_resnet18": "#4C78A8",
+    "early_exit_final": "#72B7B2",
+    "fixed_threshold_0.99": "#F58518",
+    "accuracy_first_base_0.90_alpha_0.50": "#54A24B",
+    "learned_controller_best_reward_lambda_0.30": "#E45756",
+    "reinforce_controller_lambda_0.05": "#B279A2",
+}
+
 
 def hide_spines(ax) -> None:
     ax.spines["top"].set_visible(False)
@@ -111,7 +120,8 @@ def render_bootstrap_cis() -> None:
 
     fig, ax = plt.subplots(figsize=(10, 5))
     x = np.arange(len(method_order))
-    ax.bar(x, means, color="#4C78A8", width=0.7)
+    colors = [METHOD_COLORS[m] for m in method_order]
+    ax.bar(x, means, color=colors, width=0.7)
     ax.errorbar(x, means, yerr=errors, fmt="none", ecolor="black", elinewidth=1, capsize=4)
     ax.set_title("Bootstrap Accuracy Confidence Intervals")
     ax.set_ylabel("Accuracy")
